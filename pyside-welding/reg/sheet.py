@@ -4,18 +4,20 @@
 
 from sql.session import DBSession
 from sql.model import Sheet
+from lib.items import FileItem
 
 
-def reg_sheet(sh, file=None, i=-1):
-    sheet = Sheet(
-        seq = i,
+def reg_sheet(sh, FILE=None, seq=None):
+    SHEET = Sheet(
+        seq = seq,
         sh  = sh,
-        tip = file.tree_item,
+        file = FILE
     )
 
-    if file:
-        file.sheet.append(sheet)
+    DBSession.add(SHEET)
 
-    DBSession.add(sheet)
+    # Графика
+    if hasattr(FILE, 'tree_item'):
+        SHEET.tree_item = FileItem(FILE.tree_item, sh.name, summary=SHEET)
 
-    return sheet
+    return SHEET

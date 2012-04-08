@@ -4,20 +4,24 @@
 
 from sql.session import DBSession
 from sql.model import File
+from lib.items import FileItem
 
 
-def reg_file(filename, dir=None):
-    tip = dir.tree_item if hasattr(dir, 'tree_item') else None
-    file = File(
+def reg_file(filename, DIR=None):
+    FILE = File(
         name = filename,
-        tip  = tip,
+        dir  = DIR
     )
 
-    if dir:
-        dir.file.append(file)
-        dir.files  += 1
-        dir.volume += file.size if file.size else 0
+    if DIR:
+        DIR.nfiles += 1
+        if FILE.size:
+            DIR.volume += FILE.size
 
-    DBSession.add(file)
+    DBSession.add(FILE)
 
-    return file
+    # Графика
+    if hasattr(DIR, 'tree_item'):
+        FILE.tree_item = FileItem(DIR.tree_item, filename, summary=FILE)
+
+    return FILE

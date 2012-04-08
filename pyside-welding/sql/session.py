@@ -3,7 +3,7 @@
 # Stan 2012-03-10
 
 
-db_uri = 'sqlite:///../../data/welding.sqlite'
+db_uri = 'sqlite:///d:/opt/home/a94001-2/data/welding.sqlite'
 
 
 # DBSession

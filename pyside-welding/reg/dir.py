@@ -4,19 +4,21 @@
 
 from sql.session import DBSession
 from sql.model import Dir
+from lib.items import DirItem
 
 
-def reg_dir(dirname, task=None):
-    dir = Dir(
+def reg_dir(dirname, TASK=None):
+    DIR = Dir(
         name   = dirname,
-        files  = 0,
+        nfiles = 0,
         volume = 0,
-        tip    = task.tree_item,
+        task   = TASK
     )
 
-    if task:
-        task.dir.append(dir)
+    DBSession.add(DIR)
 
-    DBSession.add(dir)
+    # Графика
+    if hasattr(TASK, 'tree_item'):
+        DIR.tree_item = DirItem(TASK.tree_item, dirname, summary=DIR)
 
-    return dir
+    return DIR

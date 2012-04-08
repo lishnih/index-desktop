@@ -2,78 +2,78 @@
 # coding=utf-8
 # Stan 2012-03-01
 
-import os, datetime
+import os
+from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, ForeignKey, MetaData
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-
-try:
-    from mainframe.items import DirItem, FileItem
-except:
-    pass
+from sqlalchemy.orm import backref, relationship
+from sqlalchemy.event import listen
 
 
 metadata = MetaData()
 Base = declarative_base(metadata=metadata)
 
 
-class Task(Base):                       # rev. 20120310
+class Task(Base):                       # rev. 20120408
     __tablename__ = 'tasks'
     id        = Column(Integer, primary_key=True)
 
     name      = Column(String)          # Имя задания
     type      = Column(String)          # Файл/директория
     source    = Column(String)          # Источник (имя файла)
-    created   = Column(Integer)         # Время создания задания
+    created   = Column(Integer, default=datetime.utcnow())  # Время создания задания
+    updated   = Column(Integer, onupdate=datetime.utcnow)   # Время обновления задания
 
-    dir       = relationship("Dir")
-
-    def __init__(self, tip=None, **kargs):
+    def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        self.created = datetime.datetime.utcnow()
         if   os.path.isdir(self.source):
             self.type = 'dir'
         elif os.path.isfile(self.source):
-            self.type = 'file'
+            self.type = 'file'        
 
-        # Графика
-        self.tree_item = DirItem(tip, self.name, self) if tip else None
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Задача '{}' ['{}' ({})]".format(self.name, self.source, self.type)
         
 
-
-class Dir(Base):                        # rev. 20120310
+class Dir(Base):                        # rev. 20120408
     __tablename__ = 'dirs'
     id        = Column(Integer, primary_key=True)
-    _tasks_id = Column(Integer, ForeignKey('tasks.id'))
+    _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Имя директории
     dirs      = Column(Integer)         # Кол-во поддиректорий
-    files     = Column(Integer)         # Суммарное кол-во файлов
+    nfiles    = Column(Integer)         # Суммарное кол-во файлов
     volume    = Column(Integer)         # Объём директории
 
-    file      = relationship("File")
+    task = relationship(Task, backref=backref('dirs', cascade='all, delete, delete-orphan'))
 
-    def __init__(self, tip=None, **kargs):
+    def __init__(self, **kargs):
         Base.__init__(self, **kargs)
 
-        # Графика
-        self.tree_item = DirItem(tip, self.name, self) if tip else None
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Директория '{}'".format(self.name)
 
 
-class File(Base):                       # rev. 20120310
+class File(Base):                       # rev. 20120408
     __tablename__ = 'files'
     id        = Column(Integer, primary_key=True)
-    _dirs_id  = Column(Integer, ForeignKey('dirs.id'))
+    _dirs_id  = Column(Integer, ForeignKey('dirs.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Имя файла
     size      = Column(Integer)         # Размер
     mtime     = Column(Integer)         # Время модификации
-    sheets    = Column(Integer)         # Кол-во листов
+    nsheets   = Column(Integer)         # Кол-во листов
 
-    sheet     = relationship("Sheet")
+    dir = relationship(Dir, backref=backref('files', cascade='all, delete, delete-orphan'))
 
-    def __init__(self, tip=None, **kargs):
+    def __init__(self, **kargs):
         Base.__init__(self, **kargs)
         if os.path.isfile(self.name):
             statinfo   = os.stat(self.name)
@@ -82,14 +82,17 @@ class File(Base):                       # rev. 20120310
 
             self.name  = os.path.basename(self.name)
 
-        # Графика
-        self.tree_item = FileItem(tip, self.name, self) if tip else None
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Файл '{}'".format(self.name)
 
 
-class Sheet(Base):                      # rev. 20120310
+class Sheet(Base):                      # rev. 20120408
     __tablename__ = 'sheets'
     id        = Column(Integer, primary_key=True)
-    _files_id = Column(Integer, ForeignKey('files.id'))
+    _files_id = Column(Integer, ForeignKey('files.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Имя листа
     seq       = Column(Integer)         # Номер листа в файле
@@ -97,11 +100,9 @@ class Sheet(Base):                      # rev. 20120310
     rows      = Column(Integer)         # Кол-во строк в листе
     visible   = Column(Integer)         # Видимость листа
 
-#   act       = relationship("Act")
-#   report    = relationship("Report")
-    joint     = relationship("Joint")
+    file = relationship(File, backref=backref('sheets', cascade='all, delete, delete-orphan'))
 
-    def __init__(self, sh=None, tip=None, **kargs):
+    def __init__(self, sh=None, **kargs):
         Base.__init__(self, **kargs)
         if sh:
             self.name = sh.name
@@ -109,14 +110,17 @@ class Sheet(Base):                      # rev. 20120310
             self.rows = sh.nrows
             self.visible = sh.visibility
 
-        # Графика
-        self.tree_item = FileItem(tip, self.name, self) if tip else None
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Таблица '{}'".format(self.name)
 
 
-class Joint(Base):                      # rev. 20120312
+class Joint(Base):                      # rev. 20120408
     __tablename__ = 'joints'
     id        = Column(Integer, primary_key=True)
-    _sheets_id = Column(Integer, ForeignKey('sheets.id'))
+    _sheets_id = Column(Integer, ForeignKey('sheets.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Номер стыка (общий)
     y         = Column(Integer)
@@ -142,14 +146,20 @@ class Joint(Base):                      # rev. 20120312
     len2      = Column(String)
     scheme    = Column(String)
 
-    def __init__(self, tip=None, **kargs):
+    sheet = relationship(Sheet, backref=backref('joints', cascade='all, delete, delete-orphan'))
+
+    def __init__(self, **kargs):
         Base.__init__(self, **kargs)
         if isinstance(self.seq, float):
             self.seq = int(self.seq)
         self.name = u'{}/{}/{}'.format(self.kp, self.type, self.seq)
 
-        # Графика
-        self.tree_item = FileItem(tip, self.name, self) if tip else None
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"Стык '{}'".format(self.name)
+
 
 
 if __name__ == '__main__':

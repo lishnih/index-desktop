@@ -12,20 +12,18 @@ class Thread(QtCore.QThread):
     def __init__(self):
         super(Thread, self).__init__()
 
-        # Таймер
-        self.timer = QtCore.QTimer(self)
-        self.interval = 1000
-        self.update_func = None
-        self.ending_func = None
-        self.timer.timeout.connect(self.update)
-
         # Вывод
+        self.timer = None
         self.message = ""
 
 
-    def set_callback(self, update_func, ending_func=None):
+    def set_callback(self, update_func, ending_func, interval=1000):
+        # Таймер
+        self.timer = QtCore.QTimer(self)
         self.update_func = update_func
         self.ending_func = ending_func
+        self.interval = interval
+        self.timer.timeout.connect(self.update)
 
 
     def update(self):
@@ -39,23 +37,25 @@ class Thread(QtCore.QThread):
                 self.ending_func(self.secs, self.message)
 
 
-    def start(self, func, *args):
-        self.secs = 0
-        self.timer.start(self.interval)
+    def start(self, func, *args, **kargs):
+        if self.timer:
+            self.secs = 0
+            self.timer.start(self.interval)
 
         self.func = func
         self.args = args
+        self.kargs = kargs
         super(Thread, self).start()
 
 
     def run(self):
         if self.func:
             try:
-                self.message = self.func(*self.args)
+                self.message = self.func(*self.args, **self.kargs)
             except Exception, e:
-                error_str = u"Завершено с ошибкой: %s" % e
-                logging.exception(error_str)
-                self.message = error_str
+                msg = u"Завершено с ошибкой: '{}'".format(e)
+                logging.exception(msg)
+                self.message = msg
 
 
 th = Thread()
