@@ -19,6 +19,6 @@ def reg_dir(dirname, TASK=None):
 
     # Графика
     if hasattr(TASK, 'tree_item'):
-        DIR.tree_item = DirItem(TASK.tree_item, dirname, summary=DIR)
+        DIR.tree_item = DirItem(TASK.tree_item, DIR.name, summary=DIR)
 
     return DIR

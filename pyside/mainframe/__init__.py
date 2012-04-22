@@ -150,7 +150,7 @@ class MainFrame(QtGui.QMainWindow):
             text1 = text1s
 
         if not isinstance(text2, basestring):
-            text2s = u""
+            text2s = u"{}\n---\n".format(text2)
             for key in dir(text2):
                 if key[0] != '_':
                     try:    text2s += u"{}: {}\n".format(key, getattr(text2, key))

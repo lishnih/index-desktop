@@ -18,6 +18,6 @@ def reg_sheet(sh, FILE=None, seq=None):
 
     # Графика
     if hasattr(FILE, 'tree_item'):
-        SHEET.tree_item = FileItem(FILE.tree_item, sh.name, summary=SHEET)
+        SHEET.tree_item = FileItem(FILE.tree_item, SHEET.name, summary=SHEET)
 
     return SHEET

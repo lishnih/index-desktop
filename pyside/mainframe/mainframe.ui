@@ -124,7 +124,7 @@
        </property>
        <widget class="QWidget" name="tab1">
         <attribute name="title">
-         <string>Output</string>
+         <string>Brief</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout">
          <property name="spacing">
@@ -140,7 +140,7 @@
        </widget>
        <widget class="QWidget" name="tab2">
         <attribute name="title">
-         <string>Errors</string>
+         <string>Tracing</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <property name="spacing">

@@ -16,6 +16,6 @@ def reg_joint(joint_dict, SHEET=None, show=True):
 
     # Графика
     if show and hasattr(SHEET, 'tree_item'):
-        JOINT.tree_item = FileItem(SHEET.tree_item, sh.name, summary=SHEET)
+        JOINT.tree_item = FileItem(SHEET.tree_item, JOINT.name, summary=JOINT)
 
-    return SHEET
+    return JOINT

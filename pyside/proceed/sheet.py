@@ -4,8 +4,8 @@
 
 import xlrd
 
-from reg.sheet import reg_sheet
-from reg.joint import reg_joint
+from reg.sheet  import reg_sheet
+from reg.joint  import reg_joint
 from reg.result import reg_ok, reg_warning, reg_error, reg_exception
 from lib.sheet_funcs import get_value, get_index
 

@@ -3,7 +3,10 @@
 # Stan 2012-03-10
 
 
-db_uri = 'sqlite:///d:/opt/home/a94001-2/data/welding.sqlite'
+# Подразумеваем, что:
+# Директория папки скрипта ~/scripts
+# Директория данных ~/data
+db_uri = 'sqlite:///../../data/welding.sqlite'
 
 
 # DBSession

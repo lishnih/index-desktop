@@ -58,7 +58,7 @@ def main():
 
     tasks_list.append(
         (
-            u'../2_ALL_Log of welding3.xls',
+            u'../../Сварка/2_ALL_Log of welding3.xls',
             u'Сварочный журнал',
             {
                 'sheets_seq':   '/^[A-Z]{2,3}$/',

@@ -22,6 +22,6 @@ def reg_file(filename, DIR=None):
 
     # Графика
     if hasattr(DIR, 'tree_item'):
-        FILE.tree_item = FileItem(DIR.tree_item, filename, summary=FILE)
+        FILE.tree_item = FileItem(DIR.tree_item, FILE.name, summary=FILE)
 
     return FILE

@@ -22,7 +22,7 @@ class Task(Base):                       # rev. 20120408
     name      = Column(String)          # Имя задания
     type      = Column(String)          # Файл/директория
     source    = Column(String)          # Источник (имя файла)
-    created   = Column(Integer, default=datetime.utcnow())  # Время создания задания
+    created   = Column(Integer, default=datetime.utcnow)    # Время создания задания
     updated   = Column(Integer, onupdate=datetime.utcnow)   # Время обновления задания
 
     def __init__(self, **kargs):
@@ -39,13 +39,13 @@ class Task(Base):                       # rev. 20120408
         return u"Задача '{}' ['{}' ({})]".format(self.name, self.source, self.type)
         
 
-class Dir(Base):                        # rev. 20120408
+class Dir(Base):                        # rev. 20120409
     __tablename__ = 'dirs'
     id        = Column(Integer, primary_key=True)
     _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Имя директории
-    dirs      = Column(Integer)         # Кол-во поддиректорий
+    ndirs     = Column(Integer)         # Кол-во поддиректорий
     nfiles    = Column(Integer)         # Суммарное кол-во файлов
     volume    = Column(Integer)         # Объём директории
 
@@ -89,15 +89,15 @@ class File(Base):                       # rev. 20120408
         return u"Файл '{}'".format(self.name)
 
 
-class Sheet(Base):                      # rev. 20120408
+class Sheet(Base):                      # rev. 20120409
     __tablename__ = 'sheets'
     id        = Column(Integer, primary_key=True)
     _files_id = Column(Integer, ForeignKey('files.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     name      = Column(String)          # Имя листа
     seq       = Column(Integer)         # Номер листа в файле
-    cols      = Column(Integer)         # Кол-во колонок в листе
-    rows      = Column(Integer)         # Кол-во строк в листе
+    ncols     = Column(Integer)         # Кол-во колонок в листе
+    nrows     = Column(Integer)         # Кол-во строк в листе
     visible   = Column(Integer)         # Видимость листа
 
     file = relationship(File, backref=backref('sheets', cascade='all, delete, delete-orphan'))
@@ -105,9 +105,9 @@ class Sheet(Base):                      # rev. 20120408
     def __init__(self, sh=None, **kargs):
         Base.__init__(self, **kargs)
         if sh:
-            self.name = sh.name
-            self.cols = sh.ncols
-            self.rows = sh.nrows
+            self.name  = sh.name
+            self.ncols = sh.ncols
+            self.nrows = sh.nrows
             self.visible = sh.visibility
 
     def __str__(self):

@@ -28,7 +28,7 @@ def reg_task(source, name='', tree_widget=None):
 
     # Графика
     if tree_widget:
-        TASK.tree_item = DirItem(tree_widget, name, summary=TASK)
+        TASK.tree_item = DirItem(tree_widget, TASK.name, summary=TASK)
         TASK.tree_item.setExpanded(True)
 
     return TASK

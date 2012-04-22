@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainframe.ui'
 #
-# Created: Mon Nov 14 00:02:00 2011
+# Created: Tue Apr 10 12:06:47 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.0.7
 #
 # WARNING! All changes made in this file will be lost!
@@ -144,8 +144,8 @@ class Ui_MainWindow(object):
         self.tree.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page1), QtGui.QApplication.translate("MainWindow", "Task", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page2), QtGui.QApplication.translate("MainWindow", "Db", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab.setTabText(self.tab.indexOf(self.tab1), QtGui.QApplication.translate("MainWindow", "Output", None, QtGui.QApplication.UnicodeUTF8))
-        self.tab.setTabText(self.tab.indexOf(self.tab2), QtGui.QApplication.translate("MainWindow", "Errors", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab.setTabText(self.tab.indexOf(self.tab1), QtGui.QApplication.translate("MainWindow", "Brief", None, QtGui.QApplication.UnicodeUTF8))
+        self.tab.setTabText(self.tab.indexOf(self.tab2), QtGui.QApplication.translate("MainWindow", "Tracing", None, QtGui.QApplication.UnicodeUTF8))
         self.menuFile.setTitle(QtGui.QApplication.translate("MainWindow", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.menuHelp.setTitle(QtGui.QApplication.translate("MainWindow", "Help", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBar.setWindowTitle(QtGui.QApplication.translate("MainWindow", "toolBar", None, QtGui.QApplication.UnicodeUTF8))
