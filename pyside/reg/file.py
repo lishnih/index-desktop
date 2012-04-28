@@ -15,13 +15,13 @@ def reg_file(filename, DIR=None):
 
     if DIR:
         DIR.nfiles += 1
-        if FILE.size:
-            DIR.volume += FILE.size
+        DIR.volume += FILE.size
 
     DBSession.add(FILE)
 
     # Графика
     if hasattr(DIR, 'tree_item'):
         FILE.tree_item = FileItem(DIR.tree_item, FILE.name, summary=FILE)
+        FILE.tree_item.setOk()
 
     return FILE

@@ -5,7 +5,7 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, MetaData
+from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.event import listen
@@ -36,7 +36,7 @@ class Task(Base):                       # rev. 20120408
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"Задача '{}' ['{}' ({})]".format(self.name, self.source, self.type)
+        return u"<Задача '{}' ({}: '{}')>".format(self.name, self.type, self.source)
         
 
 class Dir(Base):                        # rev. 20120409
@@ -53,12 +53,15 @@ class Dir(Base):                        # rev. 20120409
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
+        if self.ndirs  == None: self.ndirs  = 0
+        if self.nfiles == None: self.nfiles = 0
+        if self.volume == None: self.volume = 0
 
     def __str__(self):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"Директория '{}'".format(self.name)
+        return u"<Директория '{}'>".format(self.name)
 
 
 class File(Base):                       # rev. 20120408
@@ -75,6 +78,7 @@ class File(Base):                       # rev. 20120408
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
+        self.size = 0
         if os.path.isfile(self.name):
             statinfo   = os.stat(self.name)
             self.size  = statinfo.st_size
@@ -86,10 +90,10 @@ class File(Base):                       # rev. 20120408
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"Файл '{}'".format(self.name)
+        return u"<Файл '{}'>".format(self.name)
 
 
-class Sheet(Base):                      # rev. 20120409
+class Sheet(Base):                      # rev. 20120428
     __tablename__ = 'sheets'
     id        = Column(Integer, primary_key=True)
     _files_id = Column(Integer, ForeignKey('files.id', onupdate="CASCADE", ondelete="CASCADE"))
@@ -102,19 +106,18 @@ class Sheet(Base):                      # rev. 20120409
 
     file = relationship(File, backref=backref('sheets', cascade='all, delete, delete-orphan'))
 
-    def __init__(self, sh=None, **kargs):
+    def __init__(self, sh, **kargs):
         Base.__init__(self, **kargs)
-        if sh:
-            self.name  = sh.name
-            self.ncols = sh.ncols
-            self.nrows = sh.nrows
-            self.visible = sh.visibility
+        self.name  = sh.name
+        self.ncols = sh.ncols
+        self.nrows = sh.nrows
+        self.visible = sh.visibility
 
     def __str__(self):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"Таблица '{}'".format(self.name)
+        return u"<Таблица '{}'>".format(self.name)
 
 
 class Joint(Base):                      # rev. 20120408
@@ -158,7 +161,7 @@ class Joint(Base):                      # rev. 20120408
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"Стык '{}'".format(self.name)
+        return u"<Стык '{}'>".format(self.name)
 
 
 

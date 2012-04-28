@@ -9,8 +9,8 @@ from lib.items import FileItem
 
 def reg_sheet(sh, FILE=None, seq=None):
     SHEET = Sheet(
+        sh = sh,
         seq = seq,
-        sh  = sh,
         file = FILE
     )
 

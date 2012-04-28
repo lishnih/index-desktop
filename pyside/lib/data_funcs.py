@@ -2,7 +2,19 @@
 # coding=utf-8
 # Stan 2012-04-06
 
-import re, logging
+import numbers, re, logging
+
+
+def check_list(verifiable):
+    if verifiable == None:
+        return []
+    if isinstance(verifiable, list) or isinstance(verifiable, tuple):
+        return verifiable
+    if isinstance(verifiable, basestring) or isinstance(verifiable, numbers.Number):
+        return [verifiable]
+
+    assert None, 'Simple types required!'
+    return []
 
 
 def get_str_sequence(sequence_str):
@@ -67,6 +79,9 @@ def get_int_sequence(sequence_str, from_list=None):
 
 
 def filter_list(from_list, filter):
+    if filter == None:
+        return from_list
+
     new_list = []
 
     if   isinstance(filter, basestring):
@@ -115,3 +130,41 @@ def filter_list(from_list, filter):
                 logging.warning(u'Недопустимое значение {}'.format(name))
 
     return new_list
+
+
+def filter_match(name, filter, index=None):
+    if filter == None:
+        return True
+
+    elif isinstance(filter, basestring):
+
+        # Строка вида [i0, i1] интерпретируется как массив индексов
+        res = re.match('^\[(.*)\]$', filter)
+        if res:
+            filter = res.group(1)
+            index_list = get_int_sequence(filter)
+
+            if index == None:
+                assert None, 'index required!'
+                return False
+
+            return index in index_list
+
+        # Строка вида (name0, name1) - как массив имён
+        res = re.match('^\((.*)\)$', filter)
+        if res:
+            filter = res.group(1)
+            names_list = get_str_sequence(filter)
+
+            return name in names_list
+
+        # Строка вида /patt/ - как шаблон
+        res = re.match('^/(.*)/$', filter)
+        if res:
+            filter = res.group(1)
+
+            return True if re.match(filter. name) else False
+
+    elif isinstance(filter, list):
+
+        return name in filter

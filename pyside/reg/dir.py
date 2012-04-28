@@ -9,10 +9,8 @@ from lib.items import DirItem
 
 def reg_dir(dirname, TASK=None):
     DIR = Dir(
-        name   = dirname,
-        nfiles = 0,
-        volume = 0,
-        task   = TASK
+        name = dirname,
+        task = TASK
     )
 
     DBSession.add(DIR)

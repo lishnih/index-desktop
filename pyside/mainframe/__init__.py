@@ -129,7 +129,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def OnAbout(self):
         print "PySide version: %s; Qt version: %s" % (__version__, QtCore.__version__)
-        print "Core: rev20120408"
+        print "Core: rev20120428"
 
 
     def OnAbout_Qt(self):

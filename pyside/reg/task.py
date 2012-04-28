@@ -10,7 +10,7 @@ from lib.items import DirItem
 def reg_task(source, name='', tree_widget=None):
     TASK = Task(
         name   = name,
-        source = source,
+        source = source
     )
 
     rows = DBSession.query(Task).filter_by(name=TASK.name, source=TASK.source).all()

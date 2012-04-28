@@ -6,6 +6,20 @@ import re, time, calendar
 import xlrd
 
 
+def get_int(sh, row, col, default=0):
+    val = get_value(sh, row, col)
+    if   isinstance(val, int):
+        return val
+    elif isinstance(val, basestring):
+        return int(val) if val.isdigit() else default
+    return default
+
+
+def get_str(sh, row, col):
+    val = get_value(sh, row, col)
+    return unicode(val)
+
+
 def get_value(sh, row, col):
     try:
         typ = sh.cell_type(row, col)
