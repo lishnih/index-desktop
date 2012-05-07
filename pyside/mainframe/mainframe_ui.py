@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainframe.ui'
 #
-# Created: Tue Apr 10 12:06:47 2012
+# Created: Mon May 07 12:51:03 2012
 #      by: pyside-uic 0.2.13 running on PySide 1.0.7
 #
 # WARNING! All changes made in this file will be lost!
@@ -52,15 +52,15 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.addWidget(self.tree)
         self.toolBox.addItem(self.page1, "")
         self.page2 = QtGui.QWidget()
-        self.page2.setGeometry(QtCore.QRect(0, 0, 98, 73))
+        self.page2.setGeometry(QtCore.QRect(0, 0, 256, 393))
         self.page2.setObjectName("page2")
         self.verticalLayout_4 = QtGui.QVBoxLayout(self.page2)
         self.verticalLayout_4.setSpacing(3)
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        self.listWidget = QtGui.QListWidget(self.page2)
-        self.listWidget.setObjectName("listWidget")
-        self.verticalLayout_4.addWidget(self.listWidget)
+        self.db_tree = QtGui.QTreeWidget(self.page2)
+        self.db_tree.setObjectName("db_tree")
+        self.verticalLayout_4.addWidget(self.db_tree)
         self.toolBox.addItem(self.page2, "")
         self.tab = QtGui.QTabWidget(self.splitter)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -136,13 +136,16 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionExit, QtCore.SIGNAL("triggered()"), MainWindow.close)
         QtCore.QObject.connect(self.actionAbout, QtCore.SIGNAL("triggered()"), MainWindow.OnAbout)
         QtCore.QObject.connect(self.actionAbout_Qt, QtCore.SIGNAL("triggered()"), MainWindow.OnAbout_Qt)
-        QtCore.QObject.connect(self.tree, QtCore.SIGNAL("itemSelectionChanged()"), MainWindow.OnTreeItemSelected)
+        QtCore.QObject.connect(self.tree, QtCore.SIGNAL("itemPressed(QTreeWidgetItem*,int)"), MainWindow.OnTreeItemPressed)
+        QtCore.QObject.connect(self.toolBox, QtCore.SIGNAL("currentChanged(int)"), MainWindow.OnToolBoxChanged)
+        QtCore.QObject.connect(self.db_tree, QtCore.SIGNAL("itemPressed(QTreeWidgetItem*,int)"), MainWindow.OnTreeItemPressed)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.tree.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page1), QtGui.QApplication.translate("MainWindow", "Task", None, QtGui.QApplication.UnicodeUTF8))
+        self.db_tree.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Table", None, QtGui.QApplication.UnicodeUTF8))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page2), QtGui.QApplication.translate("MainWindow", "Db", None, QtGui.QApplication.UnicodeUTF8))
         self.tab.setTabText(self.tab.indexOf(self.tab1), QtGui.QApplication.translate("MainWindow", "Brief", None, QtGui.QApplication.UnicodeUTF8))
         self.tab.setTabText(self.tab.indexOf(self.tab2), QtGui.QApplication.translate("MainWindow", "Tracing", None, QtGui.QApplication.UnicodeUTF8))

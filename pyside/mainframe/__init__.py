@@ -3,11 +3,13 @@
 # Stan 2011-06-22
 
 import sys, os, time
+from inspect import ismethod
 from PySide import QtCore, QtGui, __version__
 
 from mainframe_ui import Ui_MainWindow
 from thread1 import th                  # Поток (уже созданный)
 from export import Proceed              # Модуль обработки
+from view_db import view_db
 
 
 # Настройки
@@ -128,37 +130,41 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def OnAbout(self):
-        print "PySide version: %s; Qt version: %s" % (__version__, QtCore.__version__)
-        print "Core: rev20120428"
+        print u"Python: {}".format(sys.version)
+        print u"PySide version: {}; Qt version: {}".format(__version__, QtCore.__version__)
+        print u"Core: rev20120507"
 
 
     def OnAbout_Qt(self):
         QtGui.QApplication.aboutQt()
 
 
-    def OnTreeItemSelected(self):
-        ti = self.ui.tree.currentItem()
-        text1 = ti.data(0, QtCore.Qt.UserRole)
-        text2 = ti.data(1, QtCore.Qt.UserRole)
+    def OnTreeItemPressed(self, item, col):
+        text1 = item.data(0, QtCore.Qt.UserRole)
+        text2 = item.data(1, QtCore.Qt.UserRole)
 
-        if not isinstance(text1, basestring):
-            text1s = u""
-            for key in dir(text1):
-                if key[0] != '_':
-                    try:    text1s += u"{}: {}\n".format(key, getattr(text1, key))
-                    except: text1s += u"{}: {!r}\n".format(key, getattr(text1, key))
-            text1 = text1s
+        try:    text1s = u"{}\n".format(text1)
+        except: text1s = u"{!r}\n".format(text1)
+        text1 = text1s
 
         if not isinstance(text2, basestring):
             text2s = u"{}\n---\n".format(text2)
             for key in dir(text2):
                 if key[0] != '_':
-                    try:    text2s += u"{}: {}\n".format(key, getattr(text2, key))
-                    except: text2s += u"{}: {!r}\n".format(key, getattr(text2, key))
+                    val = getattr(text2, key)
+                    if not ismethod(val):
+                        try:    text2s += u"{}: {}\n".format(key, val)
+                        except: text2s += u"{}: {!r}\n".format(key, val)
             text2 = text2s
 
         self.ui.text1.setPlainText(text1)
         self.ui.text2.setPlainText(text2)
+
+
+    def OnToolBoxChanged(self, current):
+        if current == 1:
+            self.ui.db_tree.clear()
+            view_db(self.ui.db_tree)
 
 
     def closeEvent(self, event):

@@ -2,8 +2,7 @@
 # coding=utf-8
 # Stan 2012-03-10
 
-from sql.session import DBSession
-from sql.model import File
+from models import DBSession, File
 from lib.items import FileItem
 
 
@@ -22,6 +21,5 @@ def reg_file(filename, DIR=None):
     # Графика
     if hasattr(DIR, 'tree_item'):
         FILE.tree_item = FileItem(DIR.tree_item, FILE.name, summary=FILE)
-        FILE.tree_item.setOk()
 
     return FILE

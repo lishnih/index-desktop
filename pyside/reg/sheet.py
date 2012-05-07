@@ -2,8 +2,7 @@
 # coding=utf-8
 # Stan 2012-03-10
 
-from sql.session import DBSession
-from sql.model import Sheet
+from models import DBSession, Sheet
 from lib.items import FileItem
 
 

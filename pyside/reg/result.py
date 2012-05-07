@@ -10,19 +10,19 @@ def reg_ok(OBJ, msg=''):
         OBJ.tree_item.setOk(msg)
 
 
-def reg_warning(OBJ, msg):
+def reg_warning(OBJ, msg=''):
     logging.warning(msg)
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setWarning(msg)
 
 
-def reg_error(OBJ, msg):
+def reg_error(OBJ, msg=''):
     logging.error(msg)
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)
 
 
-def reg_exception(OBJ, msg):
+def reg_exception(OBJ, msg=''):
     logging.exception(msg)
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)

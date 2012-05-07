@@ -2,8 +2,7 @@
 # coding=utf-8
 # Stan 2012-03-10
 
-from sql.session import DBSession
-from sql.model import Dir
+from models import DBSession, Dir
 from lib.items import DirItem
 
 

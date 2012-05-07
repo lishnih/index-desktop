@@ -4,7 +4,8 @@
 
 import sys, os, logging
 
-from sql.session import DBSession
+from models import DBSession
+from models.db import initdb
 from reg.task   import reg_task
 from reg.dir    import reg_dir
 from reg.result import reg_error
@@ -15,6 +16,8 @@ from lib.data_funcs import filter_match, filter_list
 
 
 def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=None):
+    initdb()
+
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю PySide
 
@@ -60,7 +63,7 @@ def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=
         proceed_file(filename, options, DIR)
 
     else:
-        print u"Не найден файл/директория '{}'!".format(filename)
+        logging.warning(u"Не найден файл/директория '{}'!".format(filename))
 
     try:
         DBSession.commit()

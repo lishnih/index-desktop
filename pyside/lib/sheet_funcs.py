@@ -50,7 +50,7 @@ def get_date(date_str):
         date_list = list(date_tuple)
         date_list.extend([0, 0, 0])
         date = int(time.mktime(date_list))
-        date_str = ("%02u.%02u.%02u") % (date_tuple[2], date_tuple[1], date_tuple[0])
+        date_str = "{:02}.{:02}.{:02}".format(date_list[2], date_list[1], date_list[0])
     except:         # дата, возможно, записана в текстовом формате
         res = re.search(ur"(\d{1,2}).(\d{1,2}).(\d{4}|\d{2})", date_str)
         if res:

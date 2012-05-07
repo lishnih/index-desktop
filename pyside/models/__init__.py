@@ -5,14 +5,14 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, MetaData
+from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import backref, relationship
-from sqlalchemy.event import listen
+from sqlalchemy.orm import scoped_session, sessionmaker, backref, relationship
+# from zope.sqlalchemy import ZopeTransactionExtension
 
 
-metadata = MetaData()
-Base = declarative_base(metadata=metadata)
+DBSession = scoped_session(sessionmaker())
+Base = declarative_base()
 
 
 class Task(Base):                       # rev. 20120408

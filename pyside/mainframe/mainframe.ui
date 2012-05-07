@@ -92,8 +92,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>98</width>
-          <height>73</height>
+          <width>256</width>
+          <height>393</height>
          </rect>
         </property>
         <attribute name="label">
@@ -107,7 +107,13 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QListWidget" name="listWidget"/>
+          <widget class="QTreeWidget" name="db_tree">
+           <column>
+            <property name="text">
+             <string>Table</string>
+            </property>
+           </column>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -343,9 +349,9 @@
   </connection>
   <connection>
    <sender>tree</sender>
-   <signal>itemSelectionChanged()</signal>
+   <signal>itemPressed(QTreeWidgetItem*,int)</signal>
    <receiver>MainWindow</receiver>
-   <slot>OnTreeItemSelected()</slot>
+   <slot>OnTreeItemPressed()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>124</x>
@@ -357,6 +363,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>toolBox</sender>
+   <signal>currentChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OnToolBoxChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>db_tree</sender>
+   <signal>itemPressed(QTreeWidgetItem*,int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OnTreeItemPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>229</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>OnTaskDir()</slot>
@@ -364,6 +402,7 @@
   <slot>OnClose()</slot>
   <slot>OnAbout()</slot>
   <slot>OnAbout_Qt()</slot>
-  <slot>OnTreeItemSelected()</slot>
+  <slot>OnTreeItemPressed()</slot>
+  <slot>OnToolBoxChanged()</slot>
  </slots>
 </ui>
