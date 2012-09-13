@@ -26,3 +26,13 @@ def reg_exception(OBJ, msg=''):
     logging.exception(msg)
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)
+
+
+def set_bold(OBJ):
+    if OBJ and hasattr(OBJ, 'tree_item'):
+        OBJ.tree_item.set_bold()
+
+
+def set_italic(OBJ):
+    if OBJ and hasattr(OBJ, 'tree_item'):
+        OBJ.tree_item.set_italic()

@@ -2,6 +2,8 @@
 # coding=utf-8
 # Stan 2012-03-10
 
+import logging
+
 from models import DBSession, Task
 from lib.items import DirItem
 
@@ -12,22 +14,22 @@ def reg_task(source, name='', tree_widget=None):
         source = source
     )
 
-    rows = DBSession.query(Task).filter_by(name=TASK.name, source=TASK.source).all()
-    for task in rows:
-        # Сначала удаляем резервные копии:
-        res_name = u"{}_res".format(task.name)
-        res_rows = DBSession.query(Task).filter_by(name=res_name, source=task.source).all()
-        for res_task in res_rows:
-            DBSession.delete(res_task)
-
-        # Архивируем существующее задание
-        task.name = u"{}_res".format(task.name)
+    try:
+        rows = DBSession.query(Task).filter_by(name=name, source=source).all()
+        for task in rows:
+            DBSession.delete(task)
+    except:
+        logging.exception(u'Исключение во время поиска существующих заданий')
+        logging.error(u'source:      {}'.format(source))
+        logging.error(u'name:        {}'.format(name))
+        logging.error(u'tree_widget: {}'.format(tree_widget))
 
     DBSession.add(TASK)
 
     # Графика
     if tree_widget:
-        TASK.tree_item = DirItem(tree_widget, TASK.name, summary=TASK)
+        task_name = TASK.name if TASK.name else u'<без названия>'
+        TASK.tree_item = DirItem(tree_widget, task_name, summary=TASK)
         TASK.tree_item.setExpanded(True)
 
     return TASK

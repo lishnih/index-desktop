@@ -191,7 +191,14 @@
     <addaction name="actionAbout"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>Debug</string>
+    </property>
+    <addaction name="actionFile_List"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -246,6 +253,11 @@
   <action name="actionAbout_Qt">
    <property name="text">
     <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionFile_List">
+   <property name="text">
+    <string>File List</string>
    </property>
   </action>
  </widget>
@@ -348,22 +360,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>tree</sender>
-   <signal>itemPressed(QTreeWidgetItem*,int)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>OnTreeItemPressed()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>124</x>
-     <y>278</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>349</x>
-     <y>271</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>toolBox</sender>
    <signal>currentChanged(int)</signal>
    <receiver>MainWindow</receiver>
@@ -380,14 +376,46 @@
    </hints>
   </connection>
   <connection>
-   <sender>db_tree</sender>
-   <signal>itemPressed(QTreeWidgetItem*,int)</signal>
+   <sender>tree</sender>
+   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
    <receiver>MainWindow</receiver>
    <slot>OnTreeItemPressed()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>127</x>
-     <y>229</y>
+     <y>256</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>db_tree</sender>
+   <signal>currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OnTreeItemPressed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>127</x>
+     <y>283</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFile_List</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OnDebugMenu()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>
@@ -404,5 +432,6 @@
   <slot>OnAbout_Qt()</slot>
   <slot>OnTreeItemPressed()</slot>
   <slot>OnToolBoxChanged()</slot>
+  <slot>OnDebugMenu()</slot>
  </slots>
 </ui>

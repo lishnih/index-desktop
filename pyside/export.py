@@ -4,29 +4,39 @@
 
 import sys, os, logging
 
-from models import DBSession
-from models.db import initdb
-from reg.task   import reg_task
-from reg.dir    import reg_dir
-from reg.result import reg_error
+from models       import DBSession
+from models.db    import initdb
+from reg.task     import reg_task
+from reg.dir      import reg_dir
+from reg.result   import reg_error
 from proceed.file import proceed_file
 
-from export_default import get_sources, get_taskname, get_default
+from presets        import has_preset, get_preset, get_presets, tracing
 from lib.data_funcs import filter_match, filter_list
 
 
-def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=None):
-    initdb()
+def Proceed(source, taskname=None, options={}, tree_widget=None):
+    engine = initdb()
+    if not engine:
+        return
 
     filename = os.path.abspath(source)
-    filename = filename.replace('\\', '/')    # приводим к стилю PySide
+    filename = filename.replace('\\', '/')    # приводим к стилю Qt
 
     # Регистрируем
     TASK = reg_task(filename, taskname, tree_widget)
 
     # Options
-#   if options:
+    if options:
 #       OPTIONS = reg_options(options, TASK)
+        pass
+    else:
+        logging.warning(u"Настройки не заданы для '{}', используем по умолчанию!".format(source))
+
+        if has_preset(source):
+            enabled, taskname, options = get_preset(source)
+        else:
+            logging.warning(u"Настройки по умолчанию также не заданы!")
 
     if os.path.isdir(filename):
         logging.info(u"Обработка директории '{}'".format(filename))
@@ -37,6 +47,7 @@ def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=
         # Dir
         for root, dirs, files in os.walk(filename):
             DIR = reg_dir(root, TASK)
+            tracing.append(root)
 
             for dirname in dirs:
                 if filter_match(dirname, dirs_filter):
@@ -47,6 +58,7 @@ def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=
             files_filtered = filter_list(files, files_filter)
 
             for filename in files_filtered:
+                tracing.append(filename)
 
                 # File
                 filename = os.path.join(root, filename)
@@ -72,8 +84,9 @@ def Proceed(source, taskname=get_taskname(), options=get_default(), tree_widget=
 
 
 def main():
-    for source, taskname, options in get_sources():
-        Proceed(source, taskname, options)
+    for source, enabled, taskname, options in get_presets():
+        if enabled:
+            Proceed(source, taskname, options)
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@
 # Stan 2012-03-10
 
 import re, time, calendar
+from itertools import ifilter
 import xlrd
 
 
@@ -20,7 +21,17 @@ def get_str(sh, row, col):
     return unicode(val)
 
 
+def in_crange(row, col, crange):
+    rlo, rhi, clo, chi = crange
+    return 1 if row > rlo and row < rhi and col == clo else 0
+
+
 def get_value(sh, row, col):
+    # Этот блок проверяет, не является ли требуемая ячейка объединённой с другой ячейкой
+    for crange in ifilter(lambda crange: in_crange(row, col, crange), sh.merged_cells):
+        rlo, rhi, clo, chi = crange
+        row, col = rlo, clo
+
     try:
         typ = sh.cell_type(row, col)
         val = None if typ == xlrd.XL_CELL_ERROR else sh.cell_value(row, col)

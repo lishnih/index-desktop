@@ -13,8 +13,14 @@ def reg_file(filename, DIR=None):
     )
 
     if DIR:
-        DIR.nfiles += 1
-        DIR.volume += FILE.size
+        if DIR.nfiles is None:
+            DIR.nfiles = 0
+        if DIR.volume is None:
+            DIR.volume = 0
+
+        if FILE.size is not None:
+            DIR.nfiles += 1
+            DIR.volume += FILE.size
 
     DBSession.add(FILE)
 

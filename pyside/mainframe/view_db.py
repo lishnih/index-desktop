@@ -6,7 +6,7 @@ import sys, os, logging
 from sqlalchemy import MetaData, distinct
 
 from models import DBSession
-from lib.items import DirItem, FileItem
+from lib.items import DirItem, FileItem, DisabledItem
 
 
 def view_db(tree_widget):
@@ -19,7 +19,11 @@ def view_db(tree_widget):
             
             for column in tdata.c:
                 if column.primary_key:
-                    column_item = DirItem(table_item, column.name, summary=column)
+                    column_item = DisabledItem(table_item, column.name, summary=column)
+                    column_item.setBrief(u"Главный ключ, просмотр отключен!")
+                elif column.foreign_keys:
+                    column_item = DisabledItem(table_item, column.name, summary=column)
+                    column_item.setBrief(u"Ссылка на другую таблицу, просмотр отключен!")
                 else:
                     column_item = FileItem(table_item, column.name, summary=column)
                     column_item.setBrief(get_distinct(column))

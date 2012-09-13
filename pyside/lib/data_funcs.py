@@ -2,18 +2,41 @@
 # coding=utf-8
 # Stan 2012-04-06
 
-import numbers, re, logging
+import re, logging
 
 
-def check_list(verifiable):
-    if verifiable == None:
+def get_int_str(val, default=None):
+    if val == None or val == '':
+        return default
+    elif isinstance(val, int):
+        return val
+    elif isinstance(val, float):
+        return int(val)
+    elif isinstance(val, basestring):
+        return int(val) if val.isdigit() else val
+    return repr(val)
+
+
+def get_float(val, default=None):
+    if val == None or val == '':
+        return default
+    elif isinstance(val, int) or isinstance(val, float):
+        return val
+    elif isinstance(val, basestring):
+        if val.isdigit():
+            return float(val)
+        raise Exception, u'String not floatable: {!}!'.format(val)
+    raise Exception, u'Value not floatable: {!}!'.format(val)
+
+
+def get_list(val):
+    if val == None:
         return []
-    if isinstance(verifiable, list) or isinstance(verifiable, tuple):
-        return verifiable
-    if isinstance(verifiable, basestring) or isinstance(verifiable, numbers.Number):
-        return [verifiable]
+    elif isinstance(val, list) or isinstance(val, tuple):
+        return val
+    else:
+        return [val]
 
-    assert None, 'Simple types required!'
     return []
 
 
@@ -86,7 +109,7 @@ def filter_list(from_list, filter):
 
     if   isinstance(filter, basestring):
 
-        # Строка вида [i0, i1] интерпретируется как массив индексов
+        # Строка вида "[i0, i1]" интерпретируется как массив индексов
         res = re.match('^\[(.*)\]$', filter)
         if res:
             filter = res.group(1)
@@ -100,7 +123,7 @@ def filter_list(from_list, filter):
                     logging.warning(u'Недопустимый индекс {}'.format(i+1))
                     break
 
-        # Строка вида (name0, name1) - как массив имён
+        # Строка вида "(name0, name1)" - как массив имён
         res = re.match('^\((.*)\)$', filter)
         if res:
             filter = res.group(1)
@@ -112,7 +135,7 @@ def filter_list(from_list, filter):
                 else:
                     logging.warning(u'Недопустимое значение {}'.format(name))
 
-        # Строка вида /patt/ - как шаблон
+        # Строка вида "/patt/" - как шаблон
         res = re.match('^/(.*)/$', filter)
         if res:
             filter = res.group(1)
@@ -120,6 +143,11 @@ def filter_list(from_list, filter):
             for i in from_list:
                 if pattern.match(i):
                     new_list.append(i)
+
+        # Все остальные строки принимаются как есть
+        if filter in from_list:
+            new_list.append(filter)
+
 
     elif isinstance(filter, list):
 
@@ -162,8 +190,7 @@ def filter_match(name, filter, index=None):
         res = re.match('^/(.*)/$', filter)
         if res:
             filter = res.group(1)
-
-            return True if re.match(filter. name) else False
+            return True if re.match(filter, name) else False
 
     elif isinstance(filter, list):
 

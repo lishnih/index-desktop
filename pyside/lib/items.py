@@ -6,7 +6,7 @@ from PySide import QtCore, QtGui
 
 
 class Item(QtGui.QTreeWidgetItem):
-    def __init__(self, parent, item_name, brief='', summary=None):
+    def __init__(self, parent, item_name, brief=None, summary=None):
         super(Item, self).__init__(parent)
         self.res = None
         self.parent = parent
@@ -17,8 +17,8 @@ class Item(QtGui.QTreeWidgetItem):
         self.setSummary(summary)
 
 
-    def setBrief(self, summary=None):
-        self.setData(0, QtCore.Qt.UserRole, summary)
+    def setBrief(self, brief=None):
+        self.setData(0, QtCore.Qt.UserRole, brief)
 
 
     def setSummary(self, summary=None):
@@ -120,18 +120,34 @@ class Item(QtGui.QTreeWidgetItem):
                 self.parent.setResult(res)
 
 
-
-# Элемент дерева - директория
-class DirItem(Item):
-    def __init__(self, parent, item_name, brief='', summary=None):
-        super(DirItem, self).__init__(parent, item_name, brief=brief, summary=summary)
-
+    def set_bold(self):
         font = self.font(0)
         font.setBold(True)
         self.setFont(0, font)
 
 
+    def set_italic(self):
+        font = self.font(0)
+        font.setItalic(True)
+        self.setFont(0, font)
+
+
+# Элемент дерева - директория
+class DirItem(Item):
+    def __init__(self, *args, **kargs):
+        super(DirItem, self).__init__(*args, **kargs)
+
+        self.set_bold()
+
 
 # Элемент дерева - файл
 class FileItem(Item):
     pass
+
+
+# Элемент дерева - отключенный элемент
+class DisabledItem(Item):
+    def __init__(self, *args, **kargs):
+        super(DisabledItem, self).__init__(*args, **kargs)
+
+        self.set_italic()

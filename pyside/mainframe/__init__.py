@@ -3,13 +3,14 @@
 # Stan 2011-06-22
 
 import sys, os, time
-from inspect import ismethod
 from PySide import QtCore, QtGui, __version__
 
 from mainframe_ui import Ui_MainWindow
 from thread1 import th                  # Поток (уже созданный)
 from export import Proceed              # Модуль обработки
 from view_db import view_db
+
+from lib.dump_funcs import html, plain, html_r
 
 
 # Настройки
@@ -129,36 +130,59 @@ class MainFrame(QtGui.QMainWindow):
         self.ui.tree.clear()
 
 
+    def OnDebugMenu(self):
+        import presets
+
+        dialog = QtGui.QDialog(self)
+
+        gridLayout = QtGui.QGridLayout(dialog)
+        gridLayout.setContentsMargins(0, 0, 0, 0)
+
+        splitter = QtGui.QSplitter(dialog)
+        gridLayout.addWidget(splitter)
+
+        text = QtGui.QPlainTextEdit(dialog)
+        splitter.addWidget(text)
+
+        text.setPlainText('\n'.join(presets.tracing))
+
+        dialog.show()
+        dialog.raise_()
+        dialog.activateWindow()
+
+
     def OnAbout(self):
         print u"Python: {}".format(sys.version)
         print u"PySide version: {}; Qt version: {}".format(__version__, QtCore.__version__)
-        print u"Core: rev20120507"
+        print u"Core: rev20120725"
 
 
     def OnAbout_Qt(self):
         QtGui.QApplication.aboutQt()
 
 
-    def OnTreeItemPressed(self, item, col):
+    def OnTreeItemPressed(self, item, prev):
+        tmpl = u"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html>
+<head></head>
+<body>
+  <h3>{}</h3>
+  {}
+</body>
+</html>"""
+
         text1 = item.data(0, QtCore.Qt.UserRole)
+        if text1 is not None:
+            obj_dump = html(text1)
+            text1 = tmpl.format(u"", obj_dump)
+        self.ui.text1.setHtml(text1)
+
         text2 = item.data(1, QtCore.Qt.UserRole)
-
-        try:    text1s = u"{}\n".format(text1)
-        except: text1s = u"{!r}\n".format(text1)
-        text1 = text1s
-
-        if not isinstance(text2, basestring):
-            text2s = u"{}\n---\n".format(text2)
-            for key in dir(text2):
-                if key[0] != '_':
-                    val = getattr(text2, key)
-                    if not ismethod(val):
-                        try:    text2s += u"{}: {}\n".format(key, val)
-                        except: text2s += u"{}: {!r}\n".format(key, val)
-            text2 = text2s
-
-        self.ui.text1.setPlainText(text1)
-        self.ui.text2.setPlainText(text2)
+        if text2 is not None:
+            obj_name = html(text2)
+            obj_dump = html_r(text2)
+            text2 = tmpl.format(obj_name, obj_dump)
+        self.ui.text2.setHtml(text2)
 
 
     def OnToolBoxChanged(self, current):
