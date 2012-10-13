@@ -6,7 +6,7 @@ import re
 import xlrd
 
 from reg.sheet import reg_sheet
-from reg.object import reg_object, reg_object1
+from reg import reg_object, reg_object1
 from reg.result import reg_warning, reg_error, reg_exception
 from models import DBSession, Report, Joint
 
@@ -33,11 +33,20 @@ def proceed_sheet(sh, options, FILE, i=None):
         table_options = options.get('table')
 #       parse_table(sh, table_options, SHEET)
         for row_dict, ROW in parse_table_iter(sh, table_options, SHEET):
-            ROW._sheet = SHEET
+            try:
+                REPORT = reg_object1(Report, row_dict, SHEET)
+            except Exception, e:
+                reg_exception(SHEET, Exception, e, Report, row_dict)
+                REPORT = None
 
-            REPORT = reg_object1(Report, row_dict, SHEET)
-            JOINT = reg_object1(Joint, row_dict, SHEET)
+            try:
+                JOINT = reg_object1(Joint, row_dict, SHEET)
+            except Exception, e:
+                reg_exception(SHEET, Exception, e, Joint, row_dict)
+                JOINT = None
+
             if ROW:
+                ROW._sheet = SHEET
                 ROW._report = REPORT
                 ROW._joint = JOINT
 

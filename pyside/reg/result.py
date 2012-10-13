@@ -10,22 +10,41 @@ def reg_ok(OBJ, msg=''):
         OBJ.tree_item.setOk(msg)
 
 
-def reg_warning(OBJ, msg=''):
-    logging.warning(msg)
+def reg_warning(OBJ, msg='', echo=None):
+    if echo:
+        logging.warning(msg)
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setWarning(msg)
 
 
-def reg_error(OBJ, msg=''):
-    logging.error(msg)
+def reg_error(OBJ, msg='', *args, **kargs):
+    msg = u"""(((((((
+Ошибка во время выполнении функции:
+{}!
+Были переданый следующие параметры:
+args: {!r}
+kargs: {!r}
+)))))))\n""".format(msg, args, kargs)
+
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)
+    else:
+        logging.error(msg)
 
 
-def reg_exception(OBJ, msg=''):
-    logging.exception(msg)
+def reg_exception(OBJ, Exception, e, *args, **kargs):
+    msg = u"""(((((((
+Ошибка во время выполнении функции:
+{} ({!r})!
+Были переданый следующие параметры:
+args: {!r}
+kargs: {!r}
+)))))))\n""".format(e, Exception, args, kargs)
+
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)
+    else:
+        logging.exception(msg)
 
 
 def set_bold(OBJ):

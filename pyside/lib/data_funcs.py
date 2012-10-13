@@ -5,30 +5,6 @@
 import re, logging
 
 
-def get_int_str(val, default=None):
-    if val == None or val == '':
-        return default
-    elif isinstance(val, int):
-        return val
-    elif isinstance(val, float):
-        return int(val)
-    elif isinstance(val, basestring):
-        return int(val) if val.isdigit() else val
-    return repr(val)
-
-
-def get_float(val, default=None):
-    if val == None or val == '':
-        return default
-    elif isinstance(val, int) or isinstance(val, float):
-        return val
-    elif isinstance(val, basestring):
-        if val.isdigit():
-            return float(val)
-        raise Exception, u'String not floatable: {!}!'.format(val)
-    raise Exception, u'Value not floatable: {!}!'.format(val)
-
-
 def get_list(val):
     if val == None:
         return []

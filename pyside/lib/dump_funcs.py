@@ -105,38 +105,72 @@ def html_l(obj):
 
 
 def plain_r(obj):
-    buf = u''
+    buf = u'\n'
 
-    # === ITER ===
+    # === Iter ===
+    buf += u'Iter свойства:\n==============\n'
+    list_buf = u''
     if not isinstance(obj, basestring):
-        list_buf = u''
         try:
             for val in obj:
                 list_buf += "{}\n".format(plain(val))
         except:
             pass
-        if list_buf:
-            buf += u'Iter свойства:\n{}\n'.format(list_buf)
 
-    # === DICT ===
+    if list_buf:
+        buf += list_buf
+    buf += u'\n'
+
+    # === Dict ===
+    buf += u'Dict свойства:\n==============\n'
+    list_buf = u''
+    if not isinstance(obj, basestring):
+        try:
+            for key, val in obj.items():
+                list_buf += u'{:20}: {}\n'.format(key, plain(val))
+        except:
+            pass
+
+    if list_buf:
+        buf += list_buf
+    buf += u'\n'
+
+    # === dict ===
+    buf += u'dict свойства:\n==============\n'
     if hasattr(obj, '__dict__'):
-        buf += u'Dict свойства:\n'
         d = obj.__dict__
         for key in sorted(d.keys()):
             if key[0:2] != '__':
                 val = d.get(key)
                 buf += u'{:20}: {}\n'.format(key, plain(val))
 
-    # === DIRS ===
+    buf += u'\n'
+
+    # === dir ===
+    buf += u'dir свойства:\n=============\n'
     dirs_buf = u''
     for key in dir(obj):
         val = getattr(obj, key)
-        if not ismethod(val):
+        if not callable(val):
             if key[0:2] != '__':
                 dirs_buf += u'{:20}: {}\n'.format(key, plain(val))
 
     if dirs_buf:
-        buf += u'Dirs свойства:\n{}\n'.format(dirs_buf)
+        buf += dirs_buf
+    buf += u'\n'
+
+    # === Callable ===
+    buf += u'Callable свойства:\n==================\n'
+    dirs_buf = u''
+    for key in dir(obj):
+        val = getattr(obj, key)
+        if callable(val):
+            if key[0:2] != '__':
+                dirs_buf += u'{:20}: {}\n'.format(key, plain(val))
+
+    if dirs_buf:
+        buf += dirs_buf
+    buf += u'\n'
 
     return buf
 
@@ -166,7 +200,7 @@ def html_r(obj):
                 val = d.get(key)
                 buf += u'  <tr><td style="color: blue"><b>{}</b></td><td>{}</td></tr>\n'.format(key, html(val))
 
-    # === DIRS ===
+    # === DIR ===
     dirs_buf = u''
     for key in dir(obj):
         val = getattr(obj, key)

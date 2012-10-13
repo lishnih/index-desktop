@@ -5,8 +5,23 @@
 import logging
 import xlrd
 
+from auto_funcs import call
 from lib.sheet_funcs import get_int, get_str, get_value, get_index, get_date
-from reg.object import reg_object
+from reg import reg_object
+from reg.result import reg_error
+
+
+def e_func(func_name, exception, e, *args, **kargs):
+    msg = u"""
+(((((((
+Функция '{}' вызвала ошибку:
+{} ({!r})!
+Были переданый следующие параметры:
+args: {!r}
+kargs: {!r}
+)))))))\n""".format(func_name, e, exception, args, kargs)
+    OBJ = args[2]
+    reg_error(OBJ, msg)
 
 
 def parse_report(sh, options, SHEET):
@@ -52,7 +67,7 @@ def parse_table_iter(sh, options, SHEET):
     for i in xrange(row_start - 1, sh.nrows):
         typical_column = get_value(sh, i, typical_index)
         if typical_column:
-            row_dict = dict(_sheet=SHEET)
+            row_dict = dict(_sheet=SHEET, i=i)
             col = 0
 
             test = ''
@@ -71,11 +86,8 @@ def parse_table_iter(sh, options, SHEET):
                             inner_row += 1
                 col += 1
 
-            for item in cols_funcs:
-                try:
-                    cols_funcs[item](row_dict, item)
-                except Exception, e:
-                    logging.exception(u"Ошибка при обработке элемента '{}' функцией: '{}'!".format(item, e))
+            for item, func_name in cols_funcs.items():
+                call(func_name, row_dict, item, SHEET, error_callback=e_func)
 
             if test:
                 row_dict['test'] = test

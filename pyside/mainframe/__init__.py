@@ -154,7 +154,7 @@ class MainFrame(QtGui.QMainWindow):
     def OnAbout(self):
         print u"Python: {}".format(sys.version)
         print u"PySide version: {}; Qt version: {}".format(__version__, QtCore.__version__)
-        print u"Core: rev20120725"
+        print u"Core: rev20120930"
 
 
     def OnAbout_Qt(self):
@@ -162,6 +162,11 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def OnTreeItemPressed(self, item, prev):
+        if not item:
+            self.ui.text1.setHtml('')
+            self.ui.text2.setHtml('')
+            return
+
         tmpl = u"""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
 <html>
 <head></head>

@@ -3,13 +3,12 @@
 # Stan 2012-04-28
 
 
-__revision__ = 20120901
+__revision__ = 20120929
 
 
 import os
 
 from models import Register_entry
-from proceed.auto_funcs import proceed_date, proceed_joint, proceed_d_w_th, proceed_report_w_date
 
 
 if os.name == 'posix':
@@ -34,7 +33,7 @@ reports_config = {
         'date':             [13, 0],
         'joints':           [24, 1],
         'cols_funcs': {
-            'date': proceed_date,
+            'date': 'proceed_date',
         }
     },
 }
@@ -63,9 +62,10 @@ registers_config = {
             'decision',
         ],
         'cols_funcs': {
-            'joint':    proceed_joint,
-            'd_w_th':   proceed_d_w_th,
-            'report_w_date': proceed_report_w_date,
+            'y':        'proceed_int',
+            'joint':    'proceed_joint',
+            'd_w_th':   'proceed_d_w_th',
+            'report_w_date': 'proceed_report_w_date',
         }
     },
 }
@@ -101,7 +101,7 @@ def get_preset(preset):
     return (
              preset_dict.get('enabled'),
              preset_dict.get('taskname'),
-             preset_dict.get('config')
+             preset_dict.get('config', {})
            )
 
 
@@ -112,6 +112,6 @@ def get_presets():
         yield l
 
 
-version_info = (0, 0, __revision__)
+version_info = (0, 1, __revision__)
 __version__  = '.'.join(map(str, version_info))
 version      = __version__

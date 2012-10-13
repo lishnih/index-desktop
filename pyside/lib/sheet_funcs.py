@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2012-03-10
 
-import re, time, calendar
+import re, time, calendar, logging
 from itertools import ifilter
 import xlrd
 

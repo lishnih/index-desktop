@@ -120,6 +120,13 @@ class Item(QtGui.QTreeWidgetItem):
                 self.parent.setResult(res)
 
 
+    def set_style(self, style=''):
+        if 'B' in style:
+            self.set_bold()
+        if 'I' in style:
+            self.set_italic()
+
+
     def set_bold(self):
         font = self.font(0)
         font.setBold(True)

@@ -4,18 +4,18 @@
 
 import sys, os, logging
 
-from models       import DBSession
-from models.db    import initdb
-from reg.task     import reg_task
-from reg.dir      import reg_dir
-from reg.result   import reg_error
-from proceed.file import proceed_file
+from models         import DBSession
+from models.db      import initdb
+from proceed.task   import proceed_task
+from proceed.dir    import proceed_dir
+from proceed.file   import proceed_file
+from reg.result     import reg_error
 
 from presets        import has_preset, get_preset, get_presets, tracing
 from lib.data_funcs import filter_match, filter_list
 
 
-def Proceed(source, taskname=None, options={}, tree_widget=None):
+def Proceed(source, taskname=None, options=None, tree_widget=None):
     engine = initdb()
     if not engine:
         return
@@ -23,20 +23,17 @@ def Proceed(source, taskname=None, options={}, tree_widget=None):
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю Qt
 
+    if has_preset(source):
+        enabled, taskname1, options1 = get_preset(source)
+        taskname = taskname or taskname1
+        options  = options  or options1
+
+    if options == None:
+        logging.warning(u"Настройки для '{}' не заданы!".format(source))
+        options = {}
+
     # Регистрируем
-    TASK = reg_task(filename, taskname, tree_widget)
-
-    # Options
-    if options:
-#       OPTIONS = reg_options(options, TASK)
-        pass
-    else:
-        logging.warning(u"Настройки не заданы для '{}', используем по умолчанию!".format(source))
-
-        if has_preset(source):
-            enabled, taskname, options = get_preset(source)
-        else:
-            logging.warning(u"Настройки по умолчанию также не заданы!")
+    TASK = proceed_task(filename, taskname, tree_widget)
 
     if os.path.isdir(filename):
         logging.info(u"Обработка директории '{}'".format(filename))
@@ -46,8 +43,9 @@ def Proceed(source, taskname=None, options={}, tree_widget=None):
 
         # Dir
         for root, dirs, files in os.walk(filename):
-            DIR = reg_dir(root, TASK)
             tracing.append(root)
+            DIR = proceed_dir(root, options, TASK)
+            DIR.ndirs = 0   # Обнуляем именно при обработке задания-директории
 
             for dirname in dirs:
                 if filter_match(dirname, dirs_filter):
@@ -69,7 +67,7 @@ def Proceed(source, taskname=None, options={}, tree_widget=None):
 
         # Dir
         dirname = os.path.dirname(filename)
-        DIR = reg_dir(dirname, TASK)
+        DIR = proceed_dir(dirname, options, TASK)
  
         # File
         proceed_file(filename, options, DIR)

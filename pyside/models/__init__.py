@@ -5,11 +5,9 @@
 import os
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, Float, String, Unicode, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, backref, relationship
-
-from lib.data_funcs import get_int_str, get_float
 
 
 DBSession = scoped_session(sessionmaker())
@@ -22,11 +20,11 @@ class Task(Base):                               # rev. 20120905
 
     id = Column(Integer, primary_key=True)
 
-    name        = Column(String(length=255))    # Имя задания
-    type        = Column(String(length=255))    # Файл/директория
-    source      = Column(String(length=255))    # Источник (имя файла)
-#   created     = Column(Integer, default=datetime.utcnow)  # Время создания задания
-#   updated     = Column(Integer, onupdate=datetime.utcnow) # Время обновления задания
+    name      = Column(String(length=255))      # Имя задания
+    type      = Column(String(length=255))      # Файл/директория
+    source    = Column(String(length=255))      # Источник (имя файла)
+#   created   = Column(Integer, default=datetime.utcnow)  # Время создания задания
+#   updated   = Column(Integer, onupdate=datetime.utcnow) # Время обновления задания
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
@@ -42,24 +40,21 @@ class Task(Base):                               # rev. 20120905
         return u"<Задача '{}' (Источник {}: '{}')>".format(self.name, self.type, self.source)
         
 
-class Dir(Base):                                # rev. 20120905
+class Dir(Base):                                # rev. 20120913
     __tablename__ = 'dirs'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
-    _tasks_id   = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
-    task        = relationship(Task, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _task = relationship(Task, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
-    name        = Column(String(length=255))    # Имя директории
-    ndirs       = Column(Integer)               # Кол-во поддиректорий
-    nfiles      = Column(Integer)               # Суммарное кол-во файлов
-    volume      = Column(Integer)               # Объём директории
+    name      = Column(String(length=255))      # Имя директории
+    ndirs     = Column(Integer)                 # Кол-во поддиректорий
+    nfiles    = Column(Integer)                 # Суммарное кол-во файлов
+    volume    = Column(Integer)                 # Объём директории
 
-    def __init__(self, **kargs):
-        Base.__init__(self, **kargs)
-        if self.ndirs  == None: self.ndirs  = 0
-        if self.nfiles == None: self.nfiles = 0
-        if self.volume == None: self.volume = 0
+#   def __init__(self, **kargs):
+#       Base.__init__(self, **kargs)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -68,25 +63,33 @@ class Dir(Base):                                # rev. 20120905
         return u"<Директория '{}'>".format(self.name)
 
 
-class File(Base):                               # rev. 20120905
+class File(Base):                               # rev. 20120913
     __tablename__ = 'files'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
-    _dirs_id    = Column(Integer, ForeignKey('dirs.id', onupdate='CASCADE', ondelete='CASCADE'))
-    dir         = relationship(Dir, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _dirs_id = Column(Integer, ForeignKey('dirs.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _dir = relationship(Dir, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
-    name        = Column(String(length=255))    # Имя файла
-    size        = Column(Integer)               # Размер
-    mtime       = Column(Integer)               # Время модификации
+    name      = Column(String(length=255))      # Имя файла
+    size      = Column(Integer)                 # Размер
+    mtime     = Column(Integer)                 # Время модификации
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        self.size = 0
         if os.path.isfile(self.name):
             statinfo   = os.stat(self.name)
             self.size  = statinfo.st_size
             self.mtime = statinfo.st_mtime
+
+            if self._dir:
+                if self._dir.nfiles is None:
+                    self._dir.nfiles = 0
+                if self._dir.volume is None:
+                    self._dir.volume = 0
+
+                self._dir.nfiles += 1
+                self._dir.volume += self.size
 
             self.name  = os.path.basename(self.name)
 
@@ -97,20 +100,19 @@ class File(Base):                               # rev. 20120905
         return u"<Файл '{}'>".format(self.name)
 
 
-class Sheet(Base):                              # rev. 20120905
+class Sheet(Base):                              # rev. 20120913
     __tablename__ = 'sheets'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
-    _files_id   = Column(Integer, ForeignKey('files.id', onupdate="CASCADE", ondelete="CASCADE"))
-    file        = relationship(File, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _files_id = Column(Integer, ForeignKey('files.id', onupdate="CASCADE", ondelete="CASCADE"))
+    _file = relationship(File, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
-    name        = Column(String(length=255))    # Имя листа
-    seq         = Column(Integer)               # Номер листа в файле
-    ncols       = Column(Integer)               # Кол-во колонок в листе
-    nrows       = Column(Integer)               # Кол-во строк в листе
-    visible     = Column(Integer)               # Видимость листа
-
+    name      = Column(String(length=255))      # Имя листа
+    seq       = Column(Integer)                 # Номер листа в файле
+    ncols     = Column(Integer)                 # Кол-во колонок в листе
+    nrows     = Column(Integer)                 # Кол-во строк в листе
+    visible   = Column(Integer)                 # Видимость листа
 
     def __init__(self, sh, **kargs):
         Base.__init__(self, **kargs)
@@ -123,7 +125,7 @@ class Sheet(Base):                              # rev. 20120905
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"<Таблица '{}'>".format(self.name)
+        return u"<Таблица '{}' (файл: '{}')>".format(self.name, self._file.name)
 
 
 class Report(Base):                             # rev. 20120905
@@ -142,9 +144,12 @@ class Report(Base):                             # rev. 20120905
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        self.name = u"{}/{}".format(self.report_pre, self.report_seq)
-        if self.report_sign:
-            self.name += u" {}".format(self.report_sign)
+        if not self.name:
+            name_list = filter(lambda x: x, [self.report_pre, self.report_seq])
+            name_list = map(unicode, name_list)
+            self.name = u"/".join(name_list)
+            if self.report_sign:
+                self.name += u" {}".format(self.report_sign)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -174,9 +179,10 @@ class Joint(Base):                              # rev. 20120905
         Base.__init__(self, **kargs)
         joint_pre  = self.joint_pre  + u"-" if self.joint_pre  else ''
         joint_line = self.joint_line + u"-" if self.joint_line else ''
-        self.name  = u"{}{}{}".format(joint_pre, joint_line, self.joint_seq)
-        if self.joint_sign:
-            self.name += u" {}".format(self.joint_sign)
+        if not self.name:
+            self.name  = u"{}{}{}".format(joint_pre, joint_line, self.joint_seq)
+            if self.joint_sign:
+                self.name += u" {}".format(self.joint_sign)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -185,17 +191,17 @@ class Joint(Base):                              # rev. 20120905
         return u"<Стык '{}'>".format(self.name)
 
 
-class Register_entry(Base):                     # rev. 20120905
+class Register_entry(Base):                     # rev. 20120913
     __tablename__ = 'register_entries'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
-    _sheet_id   = Column(Integer, ForeignKey('sheets.id', onupdate='CASCADE', ondelete='CASCADE'))
-    _sheet      = relationship(Sheet, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
-    _report_id  = Column(Integer, ForeignKey('reports.id', onupdate='CASCADE', ondelete='CASCADE'))
-    _report     = relationship(Report, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
-    _joint_id   = Column(Integer, ForeignKey('joints.id', onupdate='CASCADE', ondelete='CASCADE'))
-    _joint      = relationship(Joint, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _sheets_id = Column(Integer, ForeignKey('sheets.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _sheet = relationship(Sheet, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _reports_id = Column(Integer, ForeignKey('reports.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _report = relationship(Report, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _joints_id = Column(Integer, ForeignKey('joints.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _joint = relationship(Joint, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
     name        = Column(String(length=255))    # Номер стыка
     joint       = Column(String(length=255))
@@ -211,13 +217,14 @@ class Register_entry(Base):                     # rev. 20120905
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        self.name = u"{} [{}]".format(self.joint, self.y)
+        if not self.name:
+            self.name = u"{} [{}]".format(self.joint, self.y)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"<Запись в журнале '{}'>".format(self.name)
+        return u"<Запись в журнале '{}' (лист: '{}')>".format(self.name, self._sheet.name)
 
 
 

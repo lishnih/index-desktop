@@ -4,11 +4,42 @@
 
 import re, logging
 
-from lib.data_funcs import get_int_str
 from lib.sheet_funcs import get_date
 
 
-def proceed_date(_dict, item):
+def proceed_int(_dict, item, OBJ):
+    val = _dict.get(item)
+    if val == None:
+        return
+    elif val == '' or val == '-' or val == '---':
+        _dict[item] = 0
+    else:
+        return int(val)
+
+
+def proceed_int_str(_dict, item, OBJ):
+    val = _dict.get(item)
+    if val == None:
+        return
+    elif val == '' or val == '-' or val == '---':
+        _dict[item] = 0
+    elif isinstance(val, basestring):
+        _dict[item] = int(val) if val.isdigit() else val
+    else:
+        _dict[item] = int(val)
+
+
+def proceed_float(_dict, item, OBJ):
+    val = _dict.get(item)
+    if val == None:
+        return
+    elif val == '' or val == '-' or val == '---':
+        _dict[item] = 0
+    else:
+        _dict[item] = float(val)
+
+
+def proceed_date(_dict, item, OBJ):
     val = _dict.get(item)
     if val:
         date, date_str = get_date(val)
@@ -16,7 +47,16 @@ def proceed_date(_dict, item):
         _dict[item+'_str'] = date_str
 
 
-def proceed_joint(_dict, item):
+def prepare_invoice(_dict, item, OBJ):
+    proceed_int_str(_dict, item, OBJ)
+    val = _dict.get(item)
+    if val:
+        _dict['doc_obj'] = ""
+        _dict['doc_seq'] = val
+        _dict['doc_type'] = u"Накладная"
+
+
+def proceed_joint(_dict, item, OBJ):
     val = _dict.get(item)
     if val:
         res = re.match(u'(\w+)-(.*)-(\d+)', val, re.UNICODE)
@@ -37,7 +77,7 @@ def proceed_joint(_dict, item):
         logging.warning(val)
 
 
-def proceed_d_w_th(_dict, item):
+def proceed_d_w_th(_dict, item, OBJ):
     val = _dict.get(item)
     if val:
         if val == '---':
@@ -66,7 +106,7 @@ def proceed_d_w_th(_dict, item):
         logging.warning(val)
 
 
-def proceed_report_w_date(_dict, item):
+def proceed_report_w_date(_dict, item, OBJ):
     val = _dict.get(item)
     if val:
         res = re.match(u'(.*) от (.*)', val)

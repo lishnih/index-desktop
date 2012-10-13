@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2012-03-10
+# Stan 2012-03-10, 2012-09-28
 
 import logging
 
+from reg import set_root
 from models import DBSession, Task
-from lib.items import DirItem
 
 
-def reg_task(source, name='', tree_widget=None):
+def proceed_task(source, name='', tree_widget=None):
     TASK = Task(
         name   = name,
         source = source
@@ -27,9 +27,6 @@ def reg_task(source, name='', tree_widget=None):
     DBSession.add(TASK)
 
     # Графика
-    if tree_widget:
-        task_name = TASK.name if TASK.name else u'<без названия>'
-        TASK.tree_item = DirItem(tree_widget, task_name, summary=TASK)
-        TASK.tree_item.setExpanded(True)
+    set_root(TASK, tree_widget)
 
     return TASK

@@ -5,8 +5,8 @@
 import os
 import xlrd
 
-from reg.file import reg_file
-from reg.object import reg_object, set_object, set_info
+from reg import reg_object, set_object
+from models import File
 from reg.result import reg_warning, reg_error, reg_exception
 from proceed.sheet import proceed_sheet
 
@@ -14,28 +14,39 @@ from lib.data_funcs import filter_match, filter_list
 
 
 def proceed_file(filename, options, DIR):
+    try:
+        proceed_file2(filename, options, DIR)
+    except Exception, e:
+        file_dict = dict(_dir=DIR, name=filename)
+        FILE = set_object(file_dict, DIR)
+        reg_exception(FILE, Exception, e)
+
+
+def proceed_file2(filename, options, DIR):
     basename = os.path.basename(filename)
     root, ext = os.path.splitext(basename)
     ext = ext.lower()
 
+    file_dict = dict(_dir=DIR, name=filename)
+
     if ext == '.xlsx':
-        FILE = set_object(DIR, brief=u"Файлы с расширением {} не поддерживаются!".format(ext), name=basename)
+        file_dict['name'] = basename
+        FILE = set_object(file_dict, DIR, brief=u"Файлы с расширением {} не поддерживаются!".format(ext))
         return
 
     if ext == '.xls':
-        FILE = reg_file(basename, DIR)
-
         # Sheet
         book = xlrd.open_workbook(filename, on_demand=True, formatting_info=True)
-
-        nsheets = book.nsheets
-        FILE.nsheets = nsheets
 
         sheets = book.sheet_names()
         sheets_filter = options.get('sheets_filter')
         sheets_list = filter_list(sheets, sheets_filter)
 
-        set_info(FILE, brief=[sheets, sheets_list])
+        brief = "\n---\n".join(["\n".join(sheets), "\n".join(sheets_list)])
+        FILE = reg_object(File, file_dict, DIR, brief=brief)
+
+        nsheets = book.nsheets
+        FILE.nsheets = nsheets
 
         for name in sheets_list:
             sh = book.sheet_by_name(name)
@@ -44,4 +55,5 @@ def proceed_file(filename, options, DIR):
             book.unload_sheet(name)
         return
 
-    FILE = set_object(DIR, brief=u"Этот файл не индексируется!", name=basename)
+    file_dict['name'] = basename
+    FILE = set_object(file_dict, DIR, brief=u"Этот файл не индексируется!")

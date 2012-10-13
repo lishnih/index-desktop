@@ -8,9 +8,9 @@ from lib.items import FileItem
 
 def reg_sheet(sh, FILE=None, seq=None):
     SHEET = Sheet(
+        _file = FILE,
         sh = sh,
         seq = seq,
-        file = FILE
     )
 
     DBSession.add(SHEET)
