@@ -5,10 +5,13 @@
 import logging
 import xlrd
 
+from models import DBSession
+from models.links import link_objects
+from reg import reg_object, reg_object1
+from reg.result import reg_warning, reg_error, reg_exception
 from auto_funcs import call
+from lib.data_funcs import get_list
 from lib.sheet_funcs import get_int, get_str, get_value, get_index, get_date
-from reg import reg_object
-from reg.result import reg_error
 
 
 def e_func(func_name, exception, e, *args, **kargs):
@@ -26,7 +29,7 @@ kargs: {!r}
 
 def parse_report(sh, options, SHEET):
     test = ''
-    report_dict = dict(_sheet=SHEET)
+    report_dict = dict(_task=TASK)
     for key, params in report_options.items():
         l = len(params)
         if l == 2:
@@ -40,8 +43,14 @@ def parse_report(sh, options, SHEET):
             report_dict[key] = val
             test += u"{} [{},{},{}]: '{}'\n".format(key, row, col, pattern, val)
 
-    REPORT = reg_object(Report, report_dict, SHEET)
-    REPORT.test = test
+    if report_dict:
+        ROWS = []
+        for row_object in row_objects:
+            ROWS.append(reg_object(row_object, row_dict, SHEET))
+        for row_object in row_objects1:
+            ROWS.append(reg_object1(row_object, row_dict, SHEET))
+
+        link_objects(SHEET, *ROWS)
 
 
 def parse_table(sh, options, SHEET):
@@ -62,12 +71,14 @@ def parse_table_iter(sh, options, SHEET):
 
     typical_index = col_index1 or col_index2
 
-    row_object = options.get('row_object')
+    row_objects  = get_list(options.get('row_objects'))
+    row_objects1 = get_list(options.get('row_objects1'))
 
     for i in xrange(row_start - 1, sh.nrows):
         typical_column = get_value(sh, i, typical_index)
         if typical_column:
-            row_dict = dict(_sheet=SHEET, i=i)
+            TASK = SHEET._file._dir._task
+            row_dict = dict(_task=TASK, i=i)
             col = 0
 
             test = ''
@@ -86,15 +97,25 @@ def parse_table_iter(sh, options, SHEET):
                             inner_row += 1
                 col += 1
 
-            for item, func_name in cols_funcs.items():
-                call(func_name, row_dict, item, SHEET, error_callback=e_func)
+            for item, funcs_name in cols_funcs.items():
+                for func_name in get_list(funcs_name):
+                    call(func_name, row_dict, item, SHEET, error_callback=e_func)
 
             if test:
                 row_dict['test'] = test
 
             if row_dict:
-                if row_object:
-                    ROW = reg_object(row_object, row_dict, SHEET)
-                else:
-                    ROW = None
-                yield row_dict, ROW
+                ROWS = []
+                for row_object in row_objects:
+                    ROWS.append(reg_object(row_object, row_dict, SHEET))
+                for row_object in row_objects1:
+                    ROWS.append(reg_object1(row_object, row_dict, SHEET))
+
+#                 try:
+#                     DBSession.commit()
+#                 except Exception, e:
+#                     reg_exception(SHEET, Exception, e, name, source)
+
+                link_objects(SHEET, *ROWS)
+
+                yield row_dict, ROWS

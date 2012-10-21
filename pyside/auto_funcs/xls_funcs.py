@@ -47,17 +47,40 @@ def proceed_date(_dict, item, OBJ):
         _dict[item+'_str'] = date_str
 
 
-def prepare_invoice(_dict, item, OBJ):
-    proceed_int_str(_dict, item, OBJ)
+def prepare_doc_vt_act(_dict, item, OBJ):
+    _dict['type'] = u"Акт ВК"
+
     val = _dict.get(item)
     if val:
-        _dict['doc_obj'] = ""
+        _dict['doc_pre'] = ""
         _dict['doc_seq'] = val
-        _dict['doc_type'] = u"Накладная"
+
+
+def prepare_doc_invoice(_dict, item, OBJ):
+    _dict['type'] = u"Накладная"
+
+    val = _dict.get(item)
+    if val:
+        _dict['doc_pre'] = ""
+        _dict['doc_seq'] = val
+
+
+def proceed_piece(_dict, item, OBJ):
+    if 'piece_type' not in _dict:
+        _dict['piece_type'] = None
+    if 'piece_scheme' not in _dict:
+        _dict['piece_scheme'] = None
+    name_list = filter(lambda x: x, [_dict['piece_type'], _dict['piece_name'], _dict['piece_scheme']])
+    name_list = map(unicode, name_list)
+    _dict['piece'] = u" ".join(name_list)
 
 
 def proceed_joint(_dict, item, OBJ):
     val = _dict.get(item)
+    _dict[item+'_pre']  = None
+    _dict[item+'_line'] = None
+    _dict[item+'_seq']  = None
+
     if val:
         res = re.match(u'(\w+)-(.*)-(\d+)', val, re.UNICODE)
         if res:
@@ -70,21 +93,26 @@ def proceed_joint(_dict, item, OBJ):
         res = re.match(u'(\d+)-(\d+)', val)
         if res:
             joint_pre, joint_seq = res.groups()
-            _dict[item+'_pre'] = joint_pre
-            _dict[item+'_seq'] = joint_seq
+            _dict[item+'_pre']  = joint_pre
+            _dict[item+'_seq']  = joint_seq
             return
 
-        logging.warning(val)
+    logging.warning(val)
 
 
 def proceed_d_w_th(_dict, item, OBJ):
     val = _dict.get(item)
+    _dict['diameter1']  = None
+    _dict['thickness1'] = None
+    _dict['diameter2']  = None
+    _dict['thickness2'] = None
+
     if val:
         if val == '---':
             return
-# 273Х10/Ду80Х4
+
         if isinstance(val, basestring):
-            res = re.match(u'(\d+) *[XХxх*] *(\d+) *(?:/(?:Ду)?(\d+) *[XХxх*] *(\d+))?', val)
+            res = re.match(u'(\d+) *[XХxх*] *(\d+) *(?:/(?:Ду)?(\d+) *[XХxх*] *(\d+))?', val)   # 273x10/Ду80x4
             if res:
                 d1, th1, d2, th2 = res.groups()
                 _dict['diameter1']  = d1
@@ -95,18 +123,22 @@ def proceed_d_w_th(_dict, item, OBJ):
             res = re.match(u'(\d+\.?\d*)', val)
             if res:
                 th1, = res.groups()
-                th1 = float(th1)
-                _dict['thickness1'] = th1
+                _dict['thickness1'] = float(th1)
                 return
+
         elif isinstance(val, float) or isinstance(val, int):
-            th1 = val
-            _dict['thickness1'] = th1
+            _dict['thickness1'] = val
             return
 
-        logging.warning(val)
+    logging.warning(val)
 
 
 def proceed_report_w_date(_dict, item, OBJ):
+    _dict['report_pre'] = None
+    _dict['report_seq'] = None
+    _dict['date']       = None
+    _dict['date_str']   = None
+
     val = _dict.get(item)
     if val:
         res = re.match(u'(.*) от (.*)', val)
@@ -126,4 +158,4 @@ def proceed_report_w_date(_dict, item, OBJ):
                 _dict['report_seq'] = report_seq
             return
 
-        logging.warning(val)
+    logging.warning(val)

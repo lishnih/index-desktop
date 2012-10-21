@@ -35,19 +35,22 @@ def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=N
 def reg_object1(Object, object_dict, PARENT=None, style='', brief=None, summary=None):
     object_find = {}
     for i in object_dict:
-        if i in dir(Object):
+        if i[0] != '_' and i in dir(Object):
             object_find[i] = object_dict[i]
 
     try:
         rows = DBSession.query(Object).filter_by(**object_find).all()
+#         cond = [getattr(Object, i) == object_find[i] for i in object_find]
+#         rows = DBSession.query(Object).filter(*cond).all()
         if rows:
             OBJECT = rows[0]
-            if len(rows) > 1:
-                reg_error(PARENT, u"Найдено несколько одинаковых записей!", Object, object_find)
+            l = len(rows)
+            if l > 1:
+#                 cond_output = [unicode(i) for i in cond]
+                reg_error(PARENT, u"Найдено несколько одинаковых записей ({})!".format(l), Object, object_find)
             return OBJECT
-    except:
-        logging.error(unicode(DBSession.query(Object).filter_by(**object_find)))
-        logging.error(unicode(object_find))
+    except Exception, e:
+        reg_exception(PARENT, Exception, e, Object, object_find)
 
     OBJECT = reg_object(Object, object_dict, PARENT=PARENT, style=style, brief=brief, summary=summary)
 

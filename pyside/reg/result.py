@@ -19,8 +19,7 @@ def reg_warning(OBJ, msg='', echo=None):
 
 def reg_error(OBJ, msg='', *args, **kargs):
     msg = u"""(((((((
-Ошибка во время выполнении функции:
-{}!
+Ошибка '{}'!
 Были переданый следующие параметры:
 args: {!r}
 kargs: {!r}
@@ -34,8 +33,7 @@ kargs: {!r}
 
 def reg_exception(OBJ, Exception, e, *args, **kargs):
     msg = u"""(((((((
-Ошибка во время выполнении функции:
-{} ({!r})!
+Ошибка '{}' ({!r})!
 Были переданый следующие параметры:
 args: {!r}
 kargs: {!r}

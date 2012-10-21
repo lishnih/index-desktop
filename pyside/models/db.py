@@ -5,8 +5,6 @@
 import os, shutil, logging
 from sqlalchemy import create_engine
 
-from models import DBSession, Base
-
 
 # Подразумеваем, что:
 # Директория папки скрипта ~/scripts
@@ -23,7 +21,7 @@ db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
 engine = None
 
 
-def initdb():
+def initdb(DBSession, Base):
     global engine
 
     if not engine:

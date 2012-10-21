@@ -29,14 +29,12 @@ def proceed_file2(filename, options, DIR):
 
     file_dict = dict(_dir=DIR, name=filename)
 
-    if ext == '.xlsx':
-        file_dict['name'] = basename
-        FILE = set_object(file_dict, DIR, brief=u"Файлы с расширением {} не поддерживаются!".format(ext))
-        return
-
-    if ext == '.xls':
+    if ext == '.xls' or ext == '.xlsx':
         # Sheet
-        book = xlrd.open_workbook(filename, on_demand=True, formatting_info=True)
+        if ext == '.xls':
+            book = xlrd.open_workbook(filename, on_demand=True, formatting_info=True)
+        else:
+            book = xlrd.open_workbook(filename, on_demand=True)
 
         sheets = book.sheet_names()
         sheets_filter = options.get('sheets_filter')

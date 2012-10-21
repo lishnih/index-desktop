@@ -128,7 +128,7 @@ class Sheet(Base):                              # rev. 20120913
         return u"<Таблица '{}' (файл: '{}')>".format(self.name, self._file.name)
 
 
-class Report(Base):                             # rev. 20120905
+class Report(Base):                             # rev. 20120921
     __tablename__ = 'reports'
     __table_args__ = {'mysql_charset': 'utf8'}
 
@@ -149,7 +149,7 @@ class Report(Base):                             # rev. 20120905
             name_list = map(unicode, name_list)
             self.name = u"/".join(name_list)
             if self.report_sign:
-                self.name += u" {}".format(self.report_sign)
+                self.name += ' ' + format(self.report_sign)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -158,18 +158,18 @@ class Report(Base):                             # rev. 20120905
         return u"<Заключение '{}'>".format(self.name)
 
 
-class Joint(Base):                              # rev. 20120905
+class Joint(Base):                              # rev. 20120921
     __tablename__ = 'joints'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
 
     name        = Column(String(length=255))    # Номер стыка
-    joint_kind  = Column(String(length=255))
+#   joint_kind  = Column(String(length=255))
     joint_pre   = Column(String(length=255))
     joint_line  = Column(String(length=255))
     joint_seq   = Column(Integer)
-    joint_sign  = Column(String(length=255))
+#   joint_sign  = Column(String(length=255))
     diameter1   = Column(Integer)
     diameter2   = Column(Integer)
     thickness1  = Column(Float)
@@ -177,12 +177,12 @@ class Joint(Base):                              # rev. 20120905
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        joint_pre  = self.joint_pre  + u"-" if self.joint_pre  else ''
-        joint_line = self.joint_line + u"-" if self.joint_line else ''
         if not self.name:
-            self.name  = u"{}{}{}".format(joint_pre, joint_line, self.joint_seq)
-            if self.joint_sign:
-                self.name += u" {}".format(self.joint_sign)
+            name_list = filter(lambda x: x, [self.joint_pre, self.joint_line, self.joint_seq])
+            name_list = map(unicode, name_list)
+            self.name = u"-".join(name_list)
+#             if self.joint_sign:
+#                 self.name += ' ' + format(self.joint_sign)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -191,8 +191,8 @@ class Joint(Base):                              # rev. 20120905
         return u"<Стык '{}'>".format(self.name)
 
 
-class Register_entry(Base):                     # rev. 20120913
-    __tablename__ = 'register_entries'
+class Joint_entry(Base):                        # rev. 20120921
+    __tablename__ = 'joint_entries'
     __table_args__ = {'mysql_charset': 'utf8'}
 
     id = Column(Integer, primary_key=True)
@@ -203,7 +203,7 @@ class Register_entry(Base):                     # rev. 20120913
     _joints_id = Column(Integer, ForeignKey('joints.id', onupdate='CASCADE', ondelete='CASCADE'))
     _joint = relationship(Joint, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
-    name        = Column(String(length=255))    # Номер стыка
+    name        = Column(String(length=255))    # Номер записи
     joint       = Column(String(length=255))
     welders     = Column(String(length=255))
     method      = Column(String(length=255))
@@ -224,7 +224,7 @@ class Register_entry(Base):                     # rev. 20120913
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"<Запись в журнале '{}' (лист: '{}')>".format(self.name, self._sheet.name)
+        return u"<Запись стыка '{}' (лист: '{}')>".format(self.name, self._sheet.name)
 
 
 

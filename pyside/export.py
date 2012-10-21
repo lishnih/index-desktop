@@ -4,21 +4,23 @@
 
 import sys, os, logging
 
-from models         import DBSession
+from models         import DBSession, Base
 from models.db      import initdb
+from models.links   import initlinks
 from proceed.task   import proceed_task
 from proceed.dir    import proceed_dir
 from proceed.file   import proceed_file
-from reg.result     import reg_error
+from reg.result     import reg_exception
 
 from presets        import has_preset, get_preset, get_presets, tracing
 from lib.data_funcs import filter_match, filter_list
 
 
 def Proceed(source, taskname=None, options=None, tree_widget=None):
-    engine = initdb()
+    engine = initdb(DBSession, Base)
     if not engine:
         return
+    initlinks(engine, Base)
 
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю Qt
@@ -78,7 +80,7 @@ def Proceed(source, taskname=None, options=None, tree_widget=None):
     try:
         DBSession.commit()
     except Exception, e:    # StatementError
-        reg_error(TASK, e)
+        reg_exception(TASK, Exception, e)
 
 
 def main():

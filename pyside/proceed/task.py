@@ -6,6 +6,7 @@ import logging
 
 from reg import set_root
 from models import DBSession, Task
+from reg.result import reg_exception
 
 
 def proceed_task(source, name='', tree_widget=None):
@@ -14,19 +15,16 @@ def proceed_task(source, name='', tree_widget=None):
         source = source
     )
 
+    # Графика
+    set_root(TASK, tree_widget)
+
     try:
         rows = DBSession.query(Task).filter_by(name=name, source=source).all()
         for task in rows:
             DBSession.delete(task)
-    except:
-        logging.exception(u'Исключение во время поиска существующих заданий')
-        logging.error(u'source:      {}'.format(source))
-        logging.error(u'name:        {}'.format(name))
-        logging.error(u'tree_widget: {}'.format(tree_widget))
+    except Exception, e:
+        reg_exception(TASK, Exception, e, name, source)
 
     DBSession.add(TASK)
-
-    # Графика
-    set_root(TASK, tree_widget)
 
     return TASK

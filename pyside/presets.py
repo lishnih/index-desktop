@@ -3,12 +3,12 @@
 # Stan 2012-04-28
 
 
-__revision__ = 20120929
+__revision__ = 20121013
 
 
 import os
 
-from models import Register_entry
+from models import Report, Joint, Joint_entry
 
 
 if os.name == 'posix':
@@ -39,7 +39,7 @@ reports_config = {
 }
 
 
-registers_config = {
+ndt_register_config = {
 #   'dirs_filter':      None,
 #   'dirs_level':       0,
 #   'files_filter':     None,
@@ -48,7 +48,8 @@ registers_config = {
     'table':    {
         'row_start':        4,
         'check_column':     'I',
-        'row_object':       Register_entry,
+        'row_objects':      Joint_entry,
+        'row_objects1':     (Report, Joint),
         'cols_names': [
             'y',
             'joint',
@@ -62,10 +63,10 @@ registers_config = {
             'decision',
         ],
         'cols_funcs': {
-            'y':        'proceed_int',
-            'joint':    'proceed_joint',
-            'd_w_th':   'proceed_d_w_th',
-            'report_w_date': 'proceed_report_w_date',
+            'y':                'proceed_int',
+            'joint':            'proceed_joint',
+            'd_w_th':           'proceed_d_w_th',
+            'report_w_date':    'proceed_report_w_date',
         }
     },
 }
@@ -83,7 +84,7 @@ presets = {
     {
         'enabled':      1,
         'taskname':     u'Журналы контроля',
-        'config':       registers_config,
+        'config':       ndt_register_config,
     },
 }
 
@@ -112,6 +113,6 @@ def get_presets():
         yield l
 
 
-version_info = (0, 1, __revision__)
+version_info = (0, 2, __revision__)
 __version__  = '.'.join(map(str, version_info))
 version      = __version__
