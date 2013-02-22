@@ -97,6 +97,7 @@ def proceed_joint(_dict, item, OBJ):
             _dict[item+'_seq']  = joint_seq
             return
 
+    logging.warning('proceed_joint')
     logging.warning(val)
 
 
@@ -130,6 +131,7 @@ def proceed_d_w_th(_dict, item, OBJ):
             _dict['thickness1'] = val
             return
 
+    logging.warning('proceed_d_w_th')
     logging.warning(val)
 
 
@@ -158,4 +160,16 @@ def proceed_report_w_date(_dict, item, OBJ):
                 _dict['report_seq'] = report_seq
             return
 
+    logging.warning('proceed_report_w_date')
     logging.warning(val)
+
+
+def proceed_dt_doc_name(_dict, item, OBJ):
+    _dict['type'] = u"Протокол МИ"
+
+    name_list = _dict[item+'_list']
+    if name_list:
+        pre, null, seq = name_list
+
+        _dict['doc_pre'] = pre
+        _dict['doc_seq'] = seq

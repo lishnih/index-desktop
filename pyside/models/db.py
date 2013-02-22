@@ -9,14 +9,14 @@ from sqlalchemy import create_engine
 # Подразумеваем, что:
 # Директория папки скрипта ~/scripts
 # Директория данных ~/data
-# scriptname = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
-# dbname = scriptname.replace('pyside-', '')
-# db_uri = 'sqlite:///../../data/{}.sqlite'.format(dbname)
+scriptname = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+dbname = scriptname.replace('pyside-', '')
+db_uri = 'sqlite:///../../data/{}.sqlite'.format(dbname)
 
 # При использовании mysql за название БД принимаем имя пользователя (~)
-dbname = os.path.basename(os.path.dirname(os.path.dirname(
-                          os.path.dirname(os.path.dirname(__file__)))))
-db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
+# dbname = os.path.basename(os.path.dirname(os.path.dirname(
+#                           os.path.dirname(os.path.dirname(__file__)))))
+# db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
 
 engine = None
 

@@ -7,7 +7,7 @@ import xlrd
 
 from reg.sheet import reg_sheet
 from reg import reg_object
-from lib.sheet_parse import parse_report, parse_table
+from lib.sheet_parse import parse_doc, parse_table
 
 
 def proceed_sheet(sh, options, FILE, i=None):
@@ -21,9 +21,9 @@ def proceed_sheet(sh, options, FILE, i=None):
         if res:
             SHEET.sheet_test = test_cell
 
-    if 'report' in options:
-        report_options = options.get('report')
-        parse_report(sh, table_options, SHEET)
+    if 'doc' in options:
+        doc_options = options.get('doc')
+        parse_doc(sh, doc_options, SHEET)
 
     if 'table' in options:
         table_options = options.get('table')

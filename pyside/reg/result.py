@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2012-04-08
 
-import logging
+import logging, traceback
 
 
 def reg_ok(OBJ, msg=''):
@@ -32,12 +32,16 @@ kargs: {!r}
 
 
 def reg_exception(OBJ, Exception, e, *args, **kargs):
+    tb_msg = traceback.format_exc()
+
     msg = u"""(((((((
 Ошибка '{}' ({!r})!
 Были переданый следующие параметры:
 args: {!r}
 kargs: {!r}
-)))))))\n""".format(e, Exception, args, kargs)
+===
+{}
+)))))))\n""".format(e, Exception, args, kargs, tb_msg)
 
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)

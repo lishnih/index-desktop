@@ -3,12 +3,14 @@
 # Stan 2012-04-28
 
 
-__revision__ = 20121013
+__revision__ = 20121029
 
 
 import os
 
-from models import Report, Joint, Joint_entry
+from models import Doc                  # Общее для всех (документ)
+from models import Piece, Piece_entry   # Входной контроль
+from models import Joint, Joint_entry   # Сварка, НК
 
 
 if os.name == 'posix':
@@ -20,24 +22,167 @@ elif os.name == 'nt':
 tracing = []
 
 
-reports_config = {
+################################
+### Входной контроль         ###
+################################
+
+vt_register_config = {
 #   'dirs_filter':      u'',
 #   'dirs_level':       0,
-    'files_filter':     u'ВИК.xls',
-#   'sheets_filter':    u'',
-    'sheet_test':       [0, 0, u'def: pgu235/СП_Астрахань_ОКК_Акт-ВИК-МК_001'],
-    'report':    {
-        'name_pre':         [9,  9],
-        'name_seq':         [9, 11],
-#       'name_sign':        [9,  9],
-        'date':             [13, 0],
-        'joints':           [24, 1],
-        'cols_funcs': {
-            'date': 'proceed_date',
+    'files_filter':     u'/^.+\.xlsx?$/',
+    'sheets_filter':    u'/^Журнал ВК.*$/',
+#   'sheet_test':       [0, 0, u''],
+    'table': {
+        'row_start':        5,
+        'check_column':     'C',
+        'row_objects':      Piece_entry,
+        'row_objects1':     (Doc, Piece),
+        'col_names': [
+            'y',                # A
+            'date',
+            '',
+            '',
+            'mfr',
+            'invoice',
+            '',
+            'order',            # H
+            '',
+            '',
+            'doc_pre',          # K
+            'doc_seq',
+            '',
+            'piece_type',       # N
+            'piece_name',
+            'qnt',
+            'meas',
+            '',
+            'cert_type',        # S
+            'cert',
+        ],
+        'col_funcs': {
+            'date':             'proceed_date',
+            'doc_pre':          'proceed_int_str',
+            'doc_seq':          ('proceed_int_str', 'prepare_doc_vt_act'),
+            'piece_name':       'proceed_piece',
         }
     },
 }
 
+
+packlist_21_config = {
+#   'dirs_filter':      u'',
+#   'dirs_level':       0,
+    'files_filter':     u'/^.+\.xlsx?$/',
+    'sheets_filter':    u'/^\d{3}.*$/',
+#   'sheet_test':       [0, 0, u''],
+    'table':    {
+        'row_start':        3,
+        'check_column':     'D',
+        'row_objects':      Piece_entry,
+        'row_objects1':     Piece,
+        'col_names': [
+            '',
+            '',
+            'y',
+            'piece_name',
+            'piece_scheme',
+            'qnt',
+            'meas',
+        ],
+        'col_funcs': {
+            'y':                'proceed_int',
+            'piece_name':       'proceed_piece',
+        }
+    },
+}
+
+
+ss_report_config = {
+#   'dirs_filter':      u'',
+#   'dirs_level':       0,
+    'files_filter':     u'/^.+\.xlsx?$/',
+    'sheets_filter':    u'Сводная таблица',
+#   'sheet_test':       [0, 0, u''],
+    'table':    {
+        'row_start':        6,
+        'check_column':     'D',
+        'row_objects':      Piece_entry,
+        'row_objects1':     (Doc, Piece),
+        'col_names': [
+            'y',                # A
+            '',
+            'piece_name',
+            'piece_type',
+            'meas',
+            'qnt',
+            '',
+            '',
+            '',
+            'invoice',
+            'object',
+            'date',
+            'cert',
+        ],
+        'col_funcs': {
+            'y':                'proceed_int',
+            'piece_name':       'proceed_piece',
+            'qnt':              'proceed_float',
+            'invoice':          ('proceed_int_str', 'prepare_doc_invoice'),
+            'date':             'proceed_date',
+            'cert':             'proceed_int_str',
+        },
+    },
+}
+
+
+################################
+### Сварка                   ###
+################################
+
+welding_config = {
+#   'dirs_filter':      u'',
+#   'dirs_level':       0,
+    'files_filter':     u'/^.+\.xlsx?$/',
+    'sheets_filter':    u'Сварка',
+#   'sheet_test':       [0, 0, u''],
+    'table':    {
+        'row_start':        3,
+        'check_column':     'C',
+        'row_objects':      Joint_entry,
+        'row_objects1':     Joint,
+        'col_names': [
+            'date',
+            '',
+            'joint',
+            '',
+            '',
+            '',
+            '',
+            'welder',
+            '',
+            '',
+            'decision',
+            '',
+            '',
+            '',
+            'piece',
+            'd',
+            'th',
+            'steel',
+        ],
+        'col_funcs': {
+            'date':             'proceed_date',
+            'joint':            'proceed_joint',
+            'd':                'proceed_float',
+            'th':               'proceed_float',
+        },
+    },
+}
+
+
+################################
+### Неразрушающий контроль   ###
+################################
 
 ndt_register_config = {
 #   'dirs_filter':      None,
@@ -49,8 +194,8 @@ ndt_register_config = {
         'row_start':        4,
         'check_column':     'I',
         'row_objects':      Joint_entry,
-        'row_objects1':     (Report, Joint),
-        'cols_names': [
+        'row_objects1':     (Doc, Joint),
+        'col_names': [
             'y',
             'joint',
             'welders',
@@ -62,7 +207,7 @@ ndt_register_config = {
             'report_w_date',
             'decision',
         ],
-        'cols_funcs': {
+        'col_funcs': {
             'y':                'proceed_int',
             'joint':            'proceed_joint',
             'd_w_th':           'proceed_d_w_th',
@@ -73,14 +218,35 @@ ndt_register_config = {
 
 
 presets = {
-    u'{}/Заключения'.format(homepath):
+    u'{}/Входной контроль/cache'.format(homepath):
     {
-        'enabled':      0,
-        'taskname':     u'Заключения',
-        'config':       reports_config,
+        'enabled':      1,
+        'taskname':     u'Журналы ВК',
+        'config':       vt_register_config,
     },
 
-    u'{}/Журналы контроля'.format(homepath):
+    u'{}/photo/Входной контроль (21) КУ'.format(homepath):
+    {
+        'enabled':      1,
+        'taskname':     u'Журналы ВК',
+        'config':       packlist_21_config,
+    },
+
+    u'{}/Входной контроль/cache/Consolidated Report Steel Structure.xls'.format(homepath):
+    {
+        'enabled':      1,
+        'taskname':     u'Накладные МК',
+        'config':       ss_report_config,
+    },
+
+    u'{}/Сводная таблица/Сварочные журналы'.format(homepath):
+    {
+        'enabled':      1,
+        'taskname':     u'Накладные МК',
+        'config':       welding_config,
+    },
+
+    u'{}/Сводная таблица/Журналы контроля'.format(homepath):
     {
         'enabled':      1,
         'taskname':     u'Журналы контроля',
@@ -113,6 +279,6 @@ def get_presets():
         yield l
 
 
-version_info = (0, 2, __revision__)
+version_info = (0, 3, __revision__)
 __version__  = '.'.join(map(str, version_info))
 version      = __version__

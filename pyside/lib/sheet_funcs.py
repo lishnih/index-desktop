@@ -26,6 +26,7 @@ def in_crange(row, col, crange):
     return 1 if row > rlo and row < rhi and col == clo else 0
 
 
+# Возращает значение из ячейки [row, col] листа sh
 def get_value(sh, row, col):
     # Этот блок проверяет, не является ли требуемая ячейка объединённой с другой ячейкой
     for crange in ifilter(lambda crange: in_crange(row, col, crange), sh.merged_cells):
@@ -33,8 +34,8 @@ def get_value(sh, row, col):
         row, col = rlo, clo
 
     try:
-        typ = sh.cell_type(row, col)
-        val = None if typ == xlrd.XL_CELL_ERROR else sh.cell_value(row, col)
+        cell_type = sh.cell_type(row, col)
+        val = None if cell_type == xlrd.XL_CELL_ERROR else sh.cell_value(row, col)
         if isinstance(val, basestring):
             val = val.strip()
     except IndexError:
