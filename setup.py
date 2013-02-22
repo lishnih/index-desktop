@@ -16,7 +16,7 @@ else:
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
-    README = open(os.path.join(here, 'README.rst')).read()
+    README = open(os.path.join(here, 'README.txt')).read()
     CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 except IOError:
     README = CHANGES = ''
@@ -29,7 +29,7 @@ setup(
     name='index',
     version='0.1',
     url='http://github.com/lishnih/index',
-    license='LPGL',
+    license='MIT',
     author='Stan',
     author_email='lishnih@gmail.com',
     description=('Document Index'),

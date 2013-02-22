@@ -31,6 +31,7 @@ class MainFrame(QtGui.QMainWindow):
         self.restoreGeometry(self.settings.value("geometry"))
         self.restoreState(self.settings.value("windowState"))
 
+        # Сохраняем данные об окружении скрипта
         self.saveEnv()
 
         # Схема обработки, используется при многоцелевом использовании скрипта
@@ -188,10 +189,10 @@ class MainFrame(QtGui.QMainWindow):
         msg  = u"Python: {}\n".format(sys.version)
         msg += u"PySide: {}\n".format(__version__)
         msg += u"Qt: {}\n\n".format(QtCore.__version__)
-        msg += u"Core: {}\n".format(self.settings.value("Core"))
+        msg += u"Core: {}\n".format(self.settings.value("lasttime/Core"))
         msg += u"AppData: {}\n\n".format(self.settings.value("appdata"))
         msg += u"Author: Stan <lishnih@gmail.com>\n"
-        msg += u"License: GNU LGPL version 2.1\n"
+        msg += u"License: MIT\n"
         QtGui.QMessageBox.about(None, "About", msg)
 
 
@@ -219,33 +220,47 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def saveEnv(self):
-        # Сохраняем данные рабочей среды
-        self.settings.setValue("Python", sys.version)
-        self.settings.setValue("PySide", __version__)
-        self.settings.setValue("Qt", QtCore.__version__)
+        # Стат. данные первого запуска
+        if not self.settings.contains("firsttime/time"):
+            self.saveEnv_d("firsttime")
 
-        try:
-            mtime = time.localtime(os.path.getmtime(__file__))
-            rev = time.strftime("%Y-%m-%d", mtime)
-        except os.error:
-            rev = "<undefined>"
-        self.settings.setValue("Core", rev)
+        # Стат. данные последнего запуска
+        self.saveEnv_d("lasttime")
 
-        # Стат. данные
-        tt, ct = time.time(), time.ctime()
-        if not self.settings.contains("firsttime"):
-            self.settings.setValue("firsttime", tt)
-            self.settings.setValue("firsttime_str", ct)
-        self.settings.setValue("lasttime", tt)
-        self.settings.setValue("lasttime_str", ct)
+        # Кол-во запусков
+        runs = self.settings.value("runs")
+        if isinstance(runs, int):
+            self.settings.setValue("runs", runs + 1)
+        else:
+            self.settings.setValue("runs", 1)
 
         # Директория скрипта
         self.initAppData()
 
 
+    def saveEnv_d(self, d=""):
+        # Сохраняем данные рабочей среды
+        self.settings.setValue(d+"/Python", sys.version)
+        self.settings.setValue(d+"/PySide", __version__)
+        self.settings.setValue(d+"/Qt", QtCore.__version__)
+
+        # Время модификации данного файла
+        try:
+            mtime = time.localtime(os.path.getmtime(__file__))
+            rev = time.strftime("%Y-%m-%d", mtime)
+        except os.error:
+            rev = "<undefined>"
+        self.settings.setValue(d+"/Core", rev)
+
+        # Стат. данные
+        tt, ct = time.time(), time.ctime()
+        self.settings.setValue(d+"/time", tt)
+        self.settings.setValue(d+"/time_str", ct)
+
+
     def initAppData(self):
         appdata = self.settings.value("appdata")
-        if not isinstance(appdata, basestring) or not appdata:
+        if not appdata or not isinstance(appdata, basestring):
             home = os.path.expanduser("~")
             appdata = os.path.join(home, company_section, app_section)
             self.settings.setValue("appdata", appdata)
