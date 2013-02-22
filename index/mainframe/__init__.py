@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2011-06-22
+# Stan 2011-06-22, 2013-02-04
 
-import sys, os, time
+import sys, os, re, time, logging
 from PySide import QtCore, QtGui, __version__
 
 from mainframe_ui import Ui_MainWindow
@@ -13,22 +13,25 @@ from view_db import view_db
 from lib.dump_funcs import html, plain, html_r
 
 
-# Настройки
-company_section = "PySide"
-app_section = "Db"
+# Настройки: [HKCU\Software\lishnih@gmail.com\<app_section>]
+company_section = "lishnih@gmail.com"
+app_section = re.sub(r'\W', '_', os.path.dirname(os.path.dirname(__file__)))
 
 
 class MainFrame(QtGui.QMainWindow):
     def __init__(self, argv=None):
         super(MainFrame, self).__init__()
 
+        # Загружаем элементы окна
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
         # Восстанавливаем состояние окна
-        settings = QtCore.QSettings(company_section, app_section)
-        self.restoreGeometry(settings.value("geometry"))
-        self.restoreState(settings.value("windowState"))
+        self.settings = QtCore.QSettings(company_section, app_section)
+        self.restoreGeometry(self.settings.value("geometry"))
+        self.restoreState(self.settings.value("windowState"))
+
+        self.saveEnv()
 
         # Схема обработки, используется при многоцелевом использовании скрипта
         self.task_scheme = None
@@ -60,11 +63,6 @@ class MainFrame(QtGui.QMainWindow):
         return time_str
 
 
-    def set_status(self, message=''):
-        self.sb_message = message
-        self.ui.statusbar.showMessage(self.sb_message)
-
-
     def update_func(self, msecs):
         time_str = self.convert_time(msecs)
         self.ui.statusbar.showMessage(u"{}   |   Processing {}".format(self.sb_message, time_str))
@@ -76,7 +74,7 @@ class MainFrame(QtGui.QMainWindow):
         self.ui.statusbar.showMessage(u"{}   |   Processed in {}{}".format(self.sb_message, time_str, message))
 
 
-# Слоты
+# События
 
     def OnTaskDir(self):
         if th.isRunning():
@@ -151,16 +149,6 @@ class MainFrame(QtGui.QMainWindow):
         dialog.activateWindow()
 
 
-    def OnAbout(self):
-        print u"Python: {}".format(sys.version)
-        print u"PySide version: {}; Qt version: {}".format(__version__, QtCore.__version__)
-        print u"Core: rev20120930"
-
-
-    def OnAbout_Qt(self):
-        QtGui.QApplication.aboutQt()
-
-
     def OnTreeItemPressed(self, item, prev):
         if not item:
             self.ui.text1.setHtml('')
@@ -196,19 +184,77 @@ class MainFrame(QtGui.QMainWindow):
             view_db(self.ui.db_tree)
 
 
-    def closeEvent(self, event):
-#       if self.userReallyWantsToQuit():
-#           event.accept()
-#       else:
-#           event.ignore()
+    def OnAbout(self):
+        msg  = u"Python: {}\n".format(sys.version)
+        msg += u"PySide: {}\n".format(__version__)
+        msg += u"Qt: {}\n\n".format(QtCore.__version__)
+        msg += u"Core: {}\n".format(self.settings.value("Core"))
+        msg += u"AppData: {}\n\n".format(self.settings.value("appdata"))
+        msg += u"Author: Stan <lishnih@gmail.com>\n"
+        msg += u"License: GNU LGPL version 2.1\n"
+        QtGui.QMessageBox.about(None, "About", msg)
 
+
+    def OnAbout_Qt(self):
+        QtGui.QApplication.aboutQt()
+
+
+    def closeEvent(self, event):
         if th.isRunning():
             th.terminate()
+            event.ignore()
 
-        settings = QtCore.QSettings(company_section, app_section)
-        settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("windowState", self.saveState())
+        # Сохраняем состояние окна
+        self.settings.setValue("geometry", self.saveGeometry())
+        self.settings.setValue("windowState", self.saveState())
+        event.accept()
 
-        while th.isRunning():
-            print "Still running..."
-            time.sleep(1)
+
+# Сервисные функции
+
+
+    def set_status(self, message=''):
+        self.sb_message = message
+        self.ui.statusbar.showMessage(self.sb_message)
+
+
+    def saveEnv(self):
+        # Сохраняем данные рабочей среды
+        self.settings.setValue("Python", sys.version)
+        self.settings.setValue("PySide", __version__)
+        self.settings.setValue("Qt", QtCore.__version__)
+
+        try:
+            mtime = time.localtime(os.path.getmtime(__file__))
+            rev = time.strftime("%Y-%m-%d", mtime)
+        except os.error:
+            rev = "<undefined>"
+        self.settings.setValue("Core", rev)
+
+        # Стат. данные
+        tt, ct = time.time(), time.ctime()
+        if not self.settings.contains("firsttime"):
+            self.settings.setValue("firsttime", tt)
+            self.settings.setValue("firsttime_str", ct)
+        self.settings.setValue("lasttime", tt)
+        self.settings.setValue("lasttime_str", ct)
+
+        # Директория скрипта
+        self.initAppData()
+
+
+    def initAppData(self):
+        appdata = self.settings.value("appdata")
+        if not isinstance(appdata, basestring) or not appdata:
+            home = os.path.expanduser("~")
+            appdata = os.path.join(home, company_section, app_section)
+            self.settings.setValue("appdata", appdata)
+
+        if not os.path.exists(appdata):
+            logging.info("Creating directory: {}".format(appdata))
+            os.makedirs(appdata)
+
+        if not os.path.isdir(appdata):
+            QtGui.QMessageBox.critical(None, "Error",
+                "Could not create directory:\n{}".format(appdata))
+            self.settings.remove("appdata")

@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2012-04-28
-
-
-__revision__ = 20121029
-
+# Stan 2013-02-22
 
 import os
 
@@ -17,9 +13,6 @@ if os.name == 'posix':
     homepath = u'/home/stan/pgu235'
 elif os.name == 'nt':
     homepath = u'D:/opt/home/pgu235'
-
-
-tracing = []
 
 
 ################################
@@ -151,6 +144,7 @@ welding_config = {
         'row_objects':      Joint_entry,
         'row_objects1':     Joint,
         'col_names': [
+            '',
             'date',
             '',
             'joint',
@@ -218,7 +212,7 @@ ndt_register_config = {
 
 
 presets = {
-    u'{}/Входной контроль/cache'.format(homepath):
+    u'{}/Входной контроль'.format(homepath):
     {
         'enabled':      1,
         'taskname':     u'Журналы ВК',
@@ -232,7 +226,7 @@ presets = {
         'config':       packlist_21_config,
     },
 
-    u'{}/Входной контроль/cache/Consolidated Report Steel Structure.xls'.format(homepath):
+    u'{}/Входной контроль/1. КЗЛМК/Consolidated Report Steel Structure.xls'.format(homepath):
     {
         'enabled':      1,
         'taskname':     u'Накладные МК',
@@ -242,7 +236,7 @@ presets = {
     u'{}/Сводная таблица/Сварочные журналы'.format(homepath):
     {
         'enabled':      1,
-        'taskname':     u'Накладные МК',
+        'taskname':     u'Сварочные журналы',
         'config':       welding_config,
     },
 
@@ -252,33 +246,11 @@ presets = {
         'taskname':     u'Журналы контроля',
         'config':       ndt_register_config,
     },
+
+#     u'{}/Сводная таблица/Журналы стилоскопирования'.format(homepath):
+#     {
+#         'enabled':      1,
+#         'taskname':     u'Журналы стилоскопирования',
+#         'config':       ss_register_config,
+#     },
 }
-
-
-def add_preset():
-    return
-
-
-def has_preset(preset):
-    return preset in presets
-
-
-def get_preset(preset):
-    preset_dict = presets.get(preset, {})
-    return (
-             preset_dict.get('enabled'),
-             preset_dict.get('taskname'),
-             preset_dict.get('config', {})
-           )
-
-
-def get_presets():
-    for preset in presets.keys():
-        l = [preset]
-        l.extend(get_preset(preset))
-        yield l
-
-
-version_info = (0, 3, __revision__)
-__version__  = '.'.join(map(str, version_info))
-version      = __version__
