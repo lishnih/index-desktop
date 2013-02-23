@@ -5,13 +5,18 @@
 import re
 import xlrd
 
-from reg.sheet import reg_sheet
 from reg import reg_object
+from models import Sheet
 from lib.sheet_parse import parse_doc, parse_table
 
 
 def proceed_sheet(sh, options, FILE, i=None):
-    SHEET = reg_sheet(sh, FILE, i)
+    sheet_dict = dict(
+        _file = FILE,
+        sh = sh,
+        seq = i,
+    )
+    SHEET = reg_object(Sheet, sheet_dict, PARENT=FILE)
 
     sheet_test = options.get('sheet_test')
     if sheet_test:

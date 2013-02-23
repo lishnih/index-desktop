@@ -14,35 +14,82 @@ DBSession = scoped_session(sessionmaker())
 Base = declarative_base()
 
 
-class Task(Base):                               # rev. 20120408
+class Task(Base):                               # rev. 20130207
     __tablename__ = 'tasks'
     id = Column(Integer, primary_key=True)
 
-    name      = Column(String)                  # Имя задания
-    type      = Column(String)                  # Файл/директория
-    source    = Column(String)                  # Источник (имя файла)
+    name      = Column(String)                  # Имя задачи
+    status    = Column(Integer)                 # Состояние
+    img       = Column(String)                  # Изображение
+    pos_x     = Column(Integer)                 # Позиция
+    pos_y     = Column(Integer)
+    count     = Column(Integer)                 # Кол-во элементов в задаче
     created   = Column(Integer, default=datetime.utcnow)  # Время создания задания
     updated   = Column(Integer, onupdate=datetime.utcnow) # Время обновления задания
 
+#     def __init__(self, **kargs):
+#         Base.__init__(self, **kargs)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"<Задача '{}' (Состояние {})>".format(self.name, self.status)
+
+
+class Source(Base):                             # rev. 20130223
+    __tablename__ = 'sources'
+    id = Column(Integer, primary_key=True)
+    _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _task = relationship(Task, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+
+    name      = Column(String)                  # Имя файла
+    type      = Column(String)                  # Файл/директория
+    status    = Column(Integer)                 # Состояние
+    indexed   = Column(Integer)                 # Время последней индексации
+
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        if   os.path.isdir(self.source):
+        if   os.path.isdir(self.name):
             self.type = 'dir'
-        elif os.path.isfile(self.source):
+        elif os.path.isfile(self.name):
             self.type = 'file'
 
     def __str__(self):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"<Задача '{}' (Источник {}: '{}')>".format(self.name, self.type, self.source)
+        return u"<Источник '{}' <{}> (Состояние {})>".format(self.name, self.type, self.status)
+
+
+class Option(Base):                             # rev. 20130223
+    __tablename__ = 'options'
+    id = Column(Integer, primary_key=True)
+    _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _task = relationship(Task, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _source_id = Column(Integer, ForeignKey('sources.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _source = relationship(Source, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+
+    name      = Column(String)                  # Имя параметра
+    type      = Column(String)                  # Тип
+    status    = Column(Integer)                 # Состояние
+    value     = Column(Integer)                 # Значение
+
+#     def __init__(self, **kargs):
+#         Base.__init__(self, **kargs)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u"<Параметр '{}' <{}>='{}' (Состояние {})>".format(self.name, self.type, self.value, self.status)
 
 
 class Dir(Base):                                # rev. 20120930
     __tablename__ = 'dirs'
     id = Column(Integer, primary_key=True)
-    _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
-    _task = relationship(Task, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
+    _sources_id = Column(Integer, ForeignKey('sources.id', onupdate='CASCADE', ondelete='CASCADE'))
+    _source = relationship(Source, backref=backref(__tablename__, cascade='all, delete, delete-orphan'))
 
     name      = Column(String)                  # Имя директории
     ndirs     = Column(Integer)                 # Кол-во поддиректорий
@@ -105,13 +152,16 @@ class Sheet(Base):                              # rev. 20120913
     ncols     = Column(Integer)                 # Кол-во колонок в листе
     nrows     = Column(Integer)                 # Кол-во строк в листе
     visible   = Column(Integer)                 # Видимость листа
+    sh        = Column(String)                  # Аттрибут для возможности передать переменную sh
 
-    def __init__(self, sh, **kargs):
+    def __init__(self, **kargs):
         Base.__init__(self, **kargs)
-        self.name  = sh.name
-        self.ncols = sh.ncols
-        self.nrows = sh.nrows
-        self.visible = sh.visibility
+        if self.sh:
+            self.name  = self.sh.name
+            self.ncols = self.sh.ncols
+            self.nrows = self.sh.nrows
+            self.visible = self.sh.visibility
+            self.sh = None
 
     def __str__(self):
         return unicode(self).encode('utf-8')

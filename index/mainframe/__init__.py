@@ -19,7 +19,7 @@ app_section = re.sub(r'\W', '_', os.path.dirname(os.path.dirname(__file__)))
 
 
 class MainFrame(QtGui.QMainWindow):
-    def __init__(self, argv=None):
+    def __init__(self, args=None):
         super(MainFrame, self).__init__()
 
         # Загружаем элементы окна
@@ -40,16 +40,8 @@ class MainFrame(QtGui.QMainWindow):
         # Назначаем потоку callback-функции
         th.set_callback(self.update_func, self.ending_func)
 
-        # Если передан параметр - обрабатываем
-        if len(argv) > 1:
-            filename = argv[1]
-            if   os.path.isdir(filename):
-                th.start(task.TaskDir, filename, self.ui.tree)
-            elif os.path.isfile(filename):
-                th.start(task.TaskFile, filename, self.ui.tree)
-            else:
-                print u"Необходимо задать имя файла или директории!"
-                sys.exit(-1)
+        # Обрабатываем параметры
+        self.proceed_args(args)
 
 
 # Callback-функции для Таймера
@@ -97,7 +89,8 @@ class MainFrame(QtGui.QMainWindow):
             self.set_status(selected_dir)
 
             # Запускаем обработку
-            th.start(Proceed, selected_dir, tree_widget=self.ui.tree)
+            datadir = self.settings.value("appdata")
+            th.start(Proceed, selected_dir, datadir, tree_widget=self.ui.tree)
 
 
     def OnTaskFile(self):
@@ -118,7 +111,8 @@ class MainFrame(QtGui.QMainWindow):
             self.set_status(selected_file)
 
             # Запускаем обработку
-            th.start(Proceed, selected_file, tree_widget=self.ui.tree)
+            datadir = self.settings.value("appdata")
+            th.start(Proceed, selected_file, datadir, tree_widget=self.ui.tree)
 
 
     def OnClose(self):
@@ -215,6 +209,8 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def set_status(self, message=''):
+        if isinstance(message, list) or isinstance(message, tuple):
+            message = u"{} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)
 
@@ -258,12 +254,17 @@ class MainFrame(QtGui.QMainWindow):
         self.settings.setValue(d+"/time_str", ct)
 
 
-    def initAppData(self):
-        appdata = self.settings.value("appdata")
+    def initAppData(self, newappdata=None):
+        appdata = newappdata or self.settings.value("appdata")
+
+        if appdata == '/':
+            appdata = None
+
         if not appdata or not isinstance(appdata, basestring):
             home = os.path.expanduser("~")
             appdata = os.path.join(home, company_section, app_section)
-            self.settings.setValue("appdata", appdata)
+
+        self.settings.setValue("appdata", appdata)
 
         if not os.path.exists(appdata):
             logging.info("Creating directory: {}".format(appdata))
@@ -273,3 +274,25 @@ class MainFrame(QtGui.QMainWindow):
             QtGui.QMessageBox.critical(None, "Error",
                 "Could not create directory:\n{}".format(appdata))
             self.settings.remove("appdata")
+
+
+    def proceed_args(self, args):
+        if args.datadir:
+            print u"Директории для данных: '{}'".format(self.settings.value("appdata"))
+            sys.exit(0)
+
+        if args.setdatadir:
+            print u"Назначение новой директории для данных!"
+            print u"Было      | {}".format(self.settings.value("appdata"))
+            print u"Запрошено | {}".format(args.setdatadir)
+            self.initAppData(args.setdatadir)
+            print u"Назначено | {}".format(self.settings.value("appdata"))
+            sys.exit(0)
+
+        if args.files:
+            # Отображаем путь в Статусбаре
+            self.set_status(args.files)
+
+            # Запускаем обработку
+            datadir = self.settings.value("appdata")
+            th.start(Proceed, args.files, datadir, tree_widget=self.ui.tree)

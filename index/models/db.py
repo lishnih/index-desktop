@@ -4,49 +4,48 @@
 
 import os, shutil, logging
 from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 
-# Подразумеваем, что:
-# Директория папки скрипта ~/scripts
-# Директория данных ~/data
-scriptname = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
-dbname = scriptname.replace('pyside-', '')
-db_uri = 'sqlite:///../../data/{}.sqlite'.format(dbname)
+def initDb(db_uri=None, session=None, base=None):
+    if not db_uri:
+        db_uri = getDefaultDb()
+    if not session:
+        session = scoped_session(sessionmaker())
 
-# При использовании mysql за название БД принимаем имя пользователя (~)
-# dbname = os.path.basename(os.path.dirname(os.path.dirname(
-#                           os.path.dirname(os.path.dirname(__file__)))))
-# db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
+    engine = create_engine(db_uri)
 
-engine = None
+    if engine.name == 'sqlite':
+        filename = engine.url.database
+        dirname = os.path.dirname(filename)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        if not os.path.isdir(dirname):
+            logging.error(u'Невозможно создать директорию "{}"'.format(dirname))
+            return
 
+    session.configure(bind=engine)
+    if base:
+        base.metadata.create_all(engine)
 
-def initdb(DBSession, Base):
-    global engine
-
-    if not engine:
-        engine = create_engine(db_uri)
-
-        if engine.name == 'sqlite':
-            filename = engine.url.database
-            dirname = os.path.dirname(filename)
-            if not os.path.exists(dirname):
-                os.makedirs(dirname)
-            if not os.path.isdir(dirname):
-                logging.error(u'Невозможно создать директорию "{}"'.format(dirname))
-                return
-
-        DBSession.configure(bind=engine)
-        Base.metadata.create_all(engine)
-
-    return engine
+    return session
 
 
-def cleandb(engine):
+def getDefaultDb():
+    dbname = "index"
+    home = os.path.expanduser("~")
+    db_path = os.path.join(os.path.expanduser("~"), "{}.sqlite".format(dbname))
+    db_uri = 'sqlite:///{}'.format(db_path)
+#   db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
+
+    return db_uri
+
+
+def cleanDb(engine):
     pass
 
 
-def archivedb(engine):
+def archiveDb(engine):
     if engine.name == 'sqlite':
         filename = engine.url.database
         archivefile(filename)
@@ -54,7 +53,7 @@ def archivedb(engine):
         logging.warning(u"Для данного типа БД архивирование не предусмотрено: {}, пропускаем архивирование!".format(engine.name))
 
 
-def archivefile(filename):
+def archiveFile(filename):
     if os.path.isfile(filename):
         timestamp = int(os.path.getmtime(filename))
 

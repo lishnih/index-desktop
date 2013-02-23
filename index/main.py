@@ -15,13 +15,13 @@ from mainframe import MainFrame             # Основное окно
 #     app.installTranslator(translator)
 
 
-def main():
+def main(args=None):
 #   init_translator()                       # i18n
 #   tray = SysTray()                        # Трей
 
     app = QtGui.QApplication(sys.argv)      # Приложение
 
-    frame = MainFrame(sys.argv)             # Инициализируем
+    frame = MainFrame(args)                 # Инициализируем
     frame.show()                            # Отображаем
 
     res = app.exec_()                       # Цикл
@@ -29,4 +29,17 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    import argparse
+    from lib.argparse_funcs import readable_dir, readable_file_or_dir_list
+
+    parser = argparse.ArgumentParser(description='Indexing files and directories.')
+    parser.add_argument('files', action=readable_file_or_dir_list, nargs='*',
+                        help='files and directories to proceed')
+    parser.add_argument('--setdatadir', action=readable_dir, nargs='?', const='/',
+                        help='set data directory', metavar='DATADIR')
+    parser.add_argument('--datadir', action='store_true',
+                        help='get data directory')
+
+    args = parser.parse_args()
+
+    sys.exit(main(args))

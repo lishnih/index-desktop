@@ -3,6 +3,7 @@
 # Stan 2012-04-08
 
 import logging
+from PySide import QtGui
 
 from models import DBSession
 from lib.items import DirItem, FileItem
@@ -87,35 +88,19 @@ def set_object1(OBJECT, PARENT, style='', brief=None, summary=None):
 
 
 def show_object(OBJECT, PARENT, style='', brief=None, summary=None):
-    if PARENT and hasattr(PARENT, 'tree_item'):
+    if isinstance(PARENT, QtGui.QTreeWidget):
+        tree_item = PARENT
+        style = 'BIE'
+    elif PARENT and hasattr(PARENT, 'tree_item'):
+        tree_item = PARENT.tree_item
+
+    if tree_item:
         if summary is None:
             summary = OBJECT
         if not hasattr(OBJECT, 'name'):
             setattr(OBJECT, 'name', 'noname')
         name = unicode(OBJECT.name)
-        OBJECT.tree_item = FileItem(PARENT.tree_item, name, brief=brief, summary=summary)
-
-        if style:
-            OBJECT.tree_item.set_style(style)
-
-
-def set_root(OBJECT, tree_widget, style='', brief=None, summary=None):
-    if isinstance(OBJECT, dict):
-        OBJECT = aObject(**OBJECT)
-    show_root(OBJECT, tree_widget, style=style, brief=brief, summary=summary)
-
-    return OBJECT
-
-
-def show_root(OBJECT, tree_widget, style='', brief=None, summary=None):
-    if tree_widget:
-        if summary is None:
-            summary = OBJECT
-        if not hasattr(OBJECT, 'name'):
-            setattr(OBJECT, 'name', 'noname')
-        name = unicode(OBJECT.name)
-        OBJECT.tree_item = DirItem(tree_widget, name, brief=brief, summary=summary)
-        OBJECT.tree_item.setExpanded(True)
+        OBJECT.tree_item = FileItem(tree_item, name, brief=brief, summary=summary)
 
         if style:
             OBJECT.tree_item.set_style(style)

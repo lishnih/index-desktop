@@ -6,7 +6,7 @@ foreign_keys = {}
 foreign_keys_c = {}
 
 
-def initlinks(engine, Base):
+def initlinks(Base):
     global foreign_keys, foreign_keys_c
 
     for modelname, model in Base._decl_class_registry.items():
@@ -48,10 +48,10 @@ def link_objects(*args):
 
 if __name__ == '__main__':
     from __init__ import DBSession, Base
-    from db import initdb
+    from db import initDb
 
-    engine = initdb(DBSession, Base)
-    initlinks(engine)
+    DBSession = initDb()
+    initlinks(Base)
 
     print foreign_keys
     print foreign_keys_c

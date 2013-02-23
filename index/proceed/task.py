@@ -4,27 +4,33 @@
 
 import logging
 
-from reg import set_root
-from models import DBSession, Task
+from reg import set_object
+from models import DBSession, Task, Source, Option
 from reg.result import reg_exception
 
 
-def proceed_task(source, name='', tree_widget=None):
+def proceed_task(taskname, filename, options, tree_widget=None):
     TASK = Task(
-        name   = name,
-        source = source
+        name = taskname,
     )
-
-    # Графика
-    set_root(TASK, tree_widget)
-
-    try:
-        rows = DBSession.query(Task).filter_by(name=name, source=source).all()
-        for task in rows:
-            DBSession.delete(task)
-    except Exception, e:
-        reg_exception(TASK, Exception, e, name, source)
-
     DBSession.add(TASK)
 
-    return TASK
+    SOURCE = Source(
+        _task = TASK,
+        name = filename,
+    )
+    DBSession.add(SOURCE)
+
+    for key, value in options.items():
+        OPTION = Option(
+            _source = SOURCE,
+            name = key,
+            value = value,
+        )
+        DBSession.add(OPTION)
+
+    # Графика
+    TASK = set_object(TASK, tree_widget)
+    SOURCE = set_object(SOURCE, TASK)
+
+    return SOURCE

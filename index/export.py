@@ -1,41 +1,48 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2012-03-12
+# Stan 2012-03-12, 2013-02-22
 
 import sys, os, logging
 
-from models         import DBSession, Base
-from models.db      import initdb
-from models.links   import initlinks
-from proceed.task   import proceed_task
-from proceed.dir    import proceed_dir
-from proceed.file   import proceed_file
-from reg.result     import reg_exception
+from models             import DBSession, Base
+from models.db          import initDb
+from proceed.task       import proceed_task
+from proceed.dir        import proceed_dir
+from proceed.file       import proceed_file
+from reg                import set_object
+from reg.result         import reg_exception
 
-from presets        import has_preset, get_preset, get_presets, tracing
-from lib.data_funcs import filter_match, filter_list
+from presets            import tracing, has_preset, get_preset, get_presets
+from lib.data_funcs     import get_list, filter_match, filter_list
+from lib.options_funcs  import get_options
+from lib.items          import DirItem
 
 
-def Proceed(source, taskname=None, options=None, tree_widget=None):
-    engine = initdb(DBSession, Base)
-    if not engine:
+def Proceed(sources, datadir=None, tree_widget=None):
+    db_path = os.path.join(datadir, "index.sqlite")
+    db_uri = 'sqlite:///{}'.format(db_path)
+    try:
+        initDb(db_uri, DBSession, Base)
+    except Exception, e:
+        root_dict = dict(name="Root")
+        tree_item = set_object(root_dict, tree_widget, brief=[sources, datadir])
+        reg_exception(tree_item, Exception, e)
         return
-    initlinks(engine, Base)
 
+    sources = get_list(sources)
+    for source in sources:
+        Proceed1(source, datadir, tree_widget)
+
+
+def Proceed1(source, datadir=None, tree_widget=None):
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю Qt
 
-    if has_preset(source):
-        enabled, taskname1, options1 = get_preset(source)
-        taskname = taskname or taskname1
-        options  = options  or options1
+    # Читаем данные
+    taskname, options = get_options(datadir, source)
 
-    if options == None:
-        logging.warning(u"Настройки для '{}' не заданы!".format(source))
-        options = {}
-
-    # Регистрируем
-    TASK = proceed_task(filename, taskname, tree_widget)
+    # Регистрируем задание
+    SOURCE = proceed_task(taskname, filename, options, tree_widget)
 
     if os.path.isdir(filename):
         logging.info(u"Обработка директории '{}'".format(filename))
@@ -46,7 +53,7 @@ def Proceed(source, taskname=None, options=None, tree_widget=None):
         # Dir
         for root, dirs, files in os.walk(filename):
             tracing.append(root)
-            DIR = proceed_dir(root, options, TASK)
+            DIR = proceed_dir(root, options, SOURCE)
             DIR.ndirs = 0   # Обнуляем именно при обработке задания-директории
 
             for dirname in dirs:
@@ -69,7 +76,7 @@ def Proceed(source, taskname=None, options=None, tree_widget=None):
 
         # Dir
         dirname = os.path.dirname(filename)
-        DIR = proceed_dir(dirname, options, TASK)
+        DIR = proceed_dir(dirname, options, SOURCE)
  
         # File
         proceed_file(filename, options, DIR)
@@ -80,15 +87,33 @@ def Proceed(source, taskname=None, options=None, tree_widget=None):
     try:
         DBSession.commit()
     except Exception, e:    # StatementError
-        reg_exception(TASK, Exception, e)
+        reg_exception(SOURCE, Exception, e)
 
 
-def main():
-    for source, enabled, taskname, options in get_presets():
-        if enabled:
-            Proceed(source, taskname, options)
+def main(args=None):
+#     if has_preset(source):
+#         enabled, taskname1, options1 = get_preset(source)
+#         taskname = taskname or taskname1
+#         options  = options  or options1
+# 
+#     for source, enabled, taskname, options in get_presets():
+#         if enabled:
+#             Proceed(source, taskname, options)
+
+    if args.files:
+        Proceed(args.files, "from console")
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    sys.exit(main())
+
+    import argparse
+    from lib.argparse_funcs import readable_file_or_dir_list
+
+    parser = argparse.ArgumentParser(description='Indexing files and directories.')
+    parser.add_argument('files', action=readable_file_or_dir_list, nargs='*',
+                        help='files and directories to proceed')
+
+    args = parser.parse_args()
+
+    sys.exit(main(args))
