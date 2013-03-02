@@ -82,7 +82,7 @@ def proceed_joint(_dict, item, OBJ):
     _dict[item+'_seq']  = None
 
     if val:
-        res = re.match(u'(\w+)-(.*)-(\d+)', val, re.UNICODE)
+        res = re.match(u'([\w.-]+)-(\w+)-(\d+)', val, re.UNICODE)
         if res:
             joint_pre, joint_line, joint_seq = res.groups()
             _dict[item+'_pre']  = joint_pre
@@ -127,7 +127,7 @@ def proceed_d_w_th(_dict, item, OBJ):
                 _dict['thickness1'] = float(th1)
                 return
 
-        elif isinstance(val, float) or isinstance(val, int):
+        elif isinstance(val, (float, int)):
             _dict['thickness1'] = val
             return
 

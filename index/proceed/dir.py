@@ -8,10 +8,10 @@ from reg import reg_object
 from models import Dir
 
 
-def proceed_dir(dirname, options, TASK):
+def proceed_dir(dirname, options, SOURCE):
     basename = os.path.basename(dirname)
 
-    dir_dict = dict(_task=TASK, name=dirname)
-    DIR = reg_object(Dir, dir_dict, TASK, style='B')
+    dir_dict = dict(_source=SOURCE, name=dirname)
+    DIR = reg_object(Dir, dir_dict, SOURCE, style='B')
 
     return DIR

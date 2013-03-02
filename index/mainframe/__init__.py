@@ -10,7 +10,7 @@ from thread1 import th                  # Поток (уже созданный)
 from export import Proceed              # Модуль обработки
 from view_db import view_db
 
-from lib.dump_funcs import html, plain, html_r
+from lib.dump_funcs import plain, html_val, html
 
 
 # Настройки: [HKCU\Software\lishnih@gmail.com\<app_section>]
@@ -26,7 +26,7 @@ class MainFrame(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Восстанавливаем состояние окна
+        # Настройки / Восстанавливаем состояние окна
         self.settings = QtCore.QSettings(company_section, app_section)
         self.restoreGeometry(self.settings.value("geometry"))
         self.restoreState(self.settings.value("windowState"))
@@ -42,6 +42,10 @@ class MainFrame(QtGui.QMainWindow):
 
         # Обрабатываем параметры
         self.proceed_args(args)
+
+        # Инициализируем пути
+        self.init_default_path('companydata', '~~', True)
+        self.init_default_path('appdata',     '~~~', True)
 
 
 # Callback-функции для Таймера
@@ -90,7 +94,7 @@ class MainFrame(QtGui.QMainWindow):
 
             # Запускаем обработку
             datadir = self.settings.value("appdata")
-            th.start(Proceed, selected_dir, datadir, tree_widget=self.ui.tree)
+            th.start(Proceed, selected_dir, args, datadir, tree_widget=self.ui.tree)
 
 
     def OnTaskFile(self):
@@ -112,7 +116,7 @@ class MainFrame(QtGui.QMainWindow):
 
             # Запускаем обработку
             datadir = self.settings.value("appdata")
-            th.start(Proceed, selected_file, datadir, tree_widget=self.ui.tree)
+            th.start(Proceed, selected_file, args, datadir, tree_widget=self.ui.tree)
 
 
     def OnClose(self):
@@ -124,7 +128,7 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def OnDebugMenu(self):
-        import presets
+        from export import tracing
 
         dialog = QtGui.QDialog(self)
 
@@ -137,7 +141,7 @@ class MainFrame(QtGui.QMainWindow):
         text = QtGui.QPlainTextEdit(dialog)
         splitter.addWidget(text)
 
-        text.setPlainText('\n'.join(presets.tracing))
+        text.setPlainText('\n'.join(tracing))
 
         dialog.show()
         dialog.raise_()
@@ -158,17 +162,18 @@ class MainFrame(QtGui.QMainWindow):
   {}
 </body>
 </html>"""
+        it = 1
 
         text1 = item.data(0, QtCore.Qt.UserRole)
         if text1 is not None:
-            obj_dump = html(text1)
+            obj_dump = html(text1, it)
             text1 = tmpl.format(u"", obj_dump)
         self.ui.text1.setHtml(text1)
 
         text2 = item.data(1, QtCore.Qt.UserRole)
         if text2 is not None:
-            obj_name = html(text2)
-            obj_dump = html_r(text2)
+            obj_name = html_val(text2)
+            obj_dump = html(text2, it)
             text2 = tmpl.format(obj_name, obj_dump)
         self.ui.text2.setHtml(text2)
 
@@ -209,7 +214,7 @@ class MainFrame(QtGui.QMainWindow):
 
 
     def set_status(self, message=''):
-        if isinstance(message, list) or isinstance(message, tuple):
+        if isinstance(message, (list, tuple)):
             message = u"{} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)
@@ -229,9 +234,6 @@ class MainFrame(QtGui.QMainWindow):
             self.settings.setValue("runs", runs + 1)
         else:
             self.settings.setValue("runs", 1)
-
-        # Директория скрипта
-        self.initAppData()
 
 
     def saveEnv_d(self, d=""):
@@ -254,39 +256,19 @@ class MainFrame(QtGui.QMainWindow):
         self.settings.setValue(d+"/time_str", ct)
 
 
-    def initAppData(self, newappdata=None):
-        appdata = newappdata or self.settings.value("appdata")
-
-        if appdata == '/':
-            appdata = None
-
-        if not appdata or not isinstance(appdata, basestring):
-            home = os.path.expanduser("~")
-            appdata = os.path.join(home, company_section, app_section)
-
-        self.settings.setValue("appdata", appdata)
-
-        if not os.path.exists(appdata):
-            logging.info("Creating directory: {}".format(appdata))
-            os.makedirs(appdata)
-
-        if not os.path.isdir(appdata):
-            QtGui.QMessageBox.critical(None, "Error",
-                "Could not create directory:\n{}".format(appdata))
-            self.settings.remove("appdata")
-
-
     def proceed_args(self, args):
         if args.datadir:
-            print u"Директории для данных: '{}'".format(self.settings.value("appdata"))
+            print u"Директория для данных: '{}'".format(self.settings.value("appdata"))
             sys.exit(0)
 
         if args.setdatadir:
             print u"Назначение новой директории для данных!"
-            print u"Было      | {}".format(self.settings.value("appdata"))
-            print u"Запрошено | {}".format(args.setdatadir)
-            self.initAppData(args.setdatadir)
-            print u"Назначено | {}".format(self.settings.value("appdata"))
+            try:    print u"Было      | {}".format(self.settings.value("appdata"))
+            except: print u"Было      | {!r}".format(self.settings.value("appdata"))
+            newdir = self.expand_path(args.setdatadir)
+            self.settings.setValue("appdata", newdir)
+            try:    print u"Назначено | {}".format(self.settings.value("appdata"))
+            except: print u"Назначено | {!r}".format(self.settings.value("appdata"))
             sys.exit(0)
 
         if args.files:
@@ -295,4 +277,44 @@ class MainFrame(QtGui.QMainWindow):
 
             # Запускаем обработку
             datadir = self.settings.value("appdata")
-            th.start(Proceed, args.files, datadir, tree_widget=self.ui.tree)
+            th.start(Proceed, args.files, args, datadir, tree_widget=self.ui.tree)
+
+
+    def init_default_path(self, key, default, check=None):
+        value = self.settings.value(key)
+
+        if not value or not isinstance(value, basestring):
+            value = self.expand_path(default)
+            self.settings.setValue(key, value)
+
+        if check and not self.check_path(value):
+            self.settings.remove(key)
+
+
+    def expand_path(self, path):
+        if path == '~':
+            value = os.path.expanduser("~")
+            return value
+        elif path == '~~':
+            home = os.path.expanduser("~")
+            value = os.path.join(home, company_section)
+            return value
+        elif path == '~~~':
+            home = os.path.expanduser("~")
+            value = os.path.join(home, company_section, app_section)
+            return value
+        else:
+            return path
+
+
+    def check_path(self, path):
+        if not os.path.exists(path):
+            logging.info("Creating directory: {}".format(path))
+            os.makedirs(path)
+
+        if os.path.isdir(path):
+            return True
+        else:
+            QtGui.QMessageBox.critical(None, "Error",
+                "Could not create directory:\n{}".format(path))
+            return False

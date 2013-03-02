@@ -12,15 +12,29 @@ from proceed.file       import proceed_file
 from reg                import set_object
 from reg.result         import reg_exception
 
-from presets            import tracing, has_preset, get_preset, get_presets
 from lib.data_funcs     import get_list, filter_match, filter_list
 from lib.options_funcs  import get_options
 from lib.items          import DirItem
 
 
-def Proceed(sources, datadir=None, tree_widget=None):
-    db_path = os.path.join(datadir, "index.sqlite")
-    db_uri = 'sqlite:///{}'.format(db_path)
+tracing = []
+
+
+def Proceed(sources, args, datadir=None, tree_widget=None):
+    taskname = args.task
+    method = args.method
+
+    if not datadir:
+        datadir = '.'
+
+    # Получаем настройки метода
+    options = get_options(datadir, method)
+
+    dbpath = options.get('dbpath', datadir)
+    dbname = options.get('dbname', "index.sqlite")
+    db_path = os.path.join(dbpath, dbname)
+    db_uri_default = u'sqlite:///{}'.format(db_path)
+    db_uri = options.get('db_uri', db_uri_default)
     try:
         initDb(db_uri, DBSession, Base)
     except Exception, e:
@@ -31,15 +45,12 @@ def Proceed(sources, datadir=None, tree_widget=None):
 
     sources = get_list(sources)
     for source in sources:
-        Proceed1(source, datadir, tree_widget)
+        Proceed1(source, taskname, options, tree_widget)
 
 
-def Proceed1(source, datadir=None, tree_widget=None):
+def Proceed1(source, taskname=None, options=None, tree_widget=None):
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю Qt
-
-    # Читаем данные
-    taskname, options = get_options(datadir, source)
 
     # Регистрируем задание
     SOURCE = proceed_task(taskname, filename, options, tree_widget)

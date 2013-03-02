@@ -14,7 +14,7 @@ DBSession = scoped_session(sessionmaker())
 Base = declarative_base()
 
 
-class Task(Base):                               # rev. 20130207
+class Task(Base):                               # rev. 20130224
     __tablename__ = 'tasks'
     id = Column(Integer, primary_key=True)
 
@@ -24,6 +24,7 @@ class Task(Base):                               # rev. 20130207
     pos_x     = Column(Integer)                 # Позиция
     pos_y     = Column(Integer)
     count     = Column(Integer)                 # Кол-во элементов в задаче
+    method    = Column(String)                  # Метод, которым будут обрабатываться данные
     created   = Column(Integer, default=datetime.utcnow)  # Время создания задания
     updated   = Column(Integer, onupdate=datetime.utcnow) # Время обновления задания
 
@@ -37,7 +38,7 @@ class Task(Base):                               # rev. 20130207
         return u"<Задача '{}' (Состояние {})>".format(self.name, self.status)
 
 
-class Source(Base):                             # rev. 20130223
+class Source(Base):                             # rev. 20130224
     __tablename__ = 'sources'
     id = Column(Integer, primary_key=True)
     _tasks_id = Column(Integer, ForeignKey('tasks.id', onupdate='CASCADE', ondelete='CASCADE'))
@@ -46,7 +47,8 @@ class Source(Base):                             # rev. 20130223
     name      = Column(String)                  # Имя файла
     type      = Column(String)                  # Файл/директория
     status    = Column(Integer)                 # Состояние
-    indexed   = Column(Integer)                 # Время последней индексации
+    method    = Column(String)                  # для пакета index
+    indexed   = Column(Integer, default=datetime.utcnow)  # Время последней индексации
 
     def __init__(self, **kargs):
         Base.__init__(self, **kargs)

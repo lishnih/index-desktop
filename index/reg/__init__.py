@@ -5,12 +5,20 @@
 import logging
 from PySide import QtGui
 
-from models import DBSession
+import models
 from lib.items import DirItem, FileItem
 from reg.result import reg_warning, reg_error, reg_exception
 
 
 def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=None):
+    if isinstance(Object, basestring):
+        try:
+            Object = models.__getattribute__(Object)
+        except:
+            OBJECT = set_object(object_dict, PARENT, style, brief, summary)
+            reg_error(OBJECT, u"Объект не найден: '{}'!".format(Object), Object, object_dict)
+            return OBJECT
+
     object_reg = {}
     object_debug = {}
     for i in object_dict:
@@ -18,6 +26,7 @@ def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=N
             object_reg[i] = object_dict[i]
         else:
             object_debug[i] = object_dict[i]
+
     OBJECT = Object(**object_reg)
 
     # Графика
@@ -28,27 +37,36 @@ def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=N
             key = u"_debug_{}".format(key)
             setattr(OBJECT, key, val)
 
-    DBSession.add(OBJECT)
+    models.DBSession.add(OBJECT)
 
     return OBJECT
 
 
 def reg_object1(Object, object_dict, PARENT=None, style='', brief=None, summary=None):
+    if isinstance(Object, basestring):
+        try:
+            Object = models.__getattribute__(Object)
+        except:
+            OBJECT = set_object(object_dict, PARENT, style, brief, summary)
+            reg_error(OBJECT, u"Объект не найден: '{}'!".format(Object), Object, object_dict)
+            return OBJECT
+
     object_find = {}
     for i in object_dict:
         if i[0] != '_' and i in dir(Object):
             object_find[i] = object_dict[i]
 
     try:
-        rows = DBSession.query(Object).filter_by(**object_find).all()
-#         cond = [getattr(Object, i) == object_find[i] for i in object_find]
-#         rows = DBSession.query(Object).filter(*cond).all()
+        rows = models.DBSession.query(Object).filter_by(**object_find).all()
+#       cond = [getattr(Object, i) == object_find[i] for i in object_find]
+#       rows = models.DBSession.query(Object).filter(*cond).all()
         if rows:
             OBJECT = rows[0]
             l = len(rows)
             if l > 1:
-#                 cond_output = [unicode(i) for i in cond]
+#               cond_output = [unicode(i) for i in cond]
                 reg_error(PARENT, u"Найдено несколько одинаковых записей ({})!".format(l), Object, object_find)
+            show_object(OBJECT, PARENT, style=style, brief=brief, summary=summary)
             return OBJECT
     except Exception, e:
         reg_exception(PARENT, Exception, e, Object, object_find)
@@ -93,6 +111,9 @@ def show_object(OBJECT, PARENT, style='', brief=None, summary=None):
         style = 'BIE'
     elif PARENT and hasattr(PARENT, 'tree_item'):
         tree_item = PARENT.tree_item
+    else:
+        logging.warning(u"Данный элемент не имеет отображения: {!r}".format(PARENT))
+        tree_item = None
 
     if tree_item:
         if summary is None:

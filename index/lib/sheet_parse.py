@@ -132,7 +132,7 @@ def parse_table_iter(sh, options, SHEET):
     for j in xrange(row_start, row_stop):
         typical_column = get_value(sh, j, typical_index)
         if typical_column:
-            TASK = SHEET._file._dir._task
+            TASK = SHEET._file._dir._source._task
             row_dict = dict(_task=TASK, j=j)
             test = ''
 

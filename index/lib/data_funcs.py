@@ -8,7 +8,7 @@ import re, logging
 def get_list(val):
     if val == None:
         return []
-    elif isinstance(val, list) or isinstance(val, tuple):
+    elif isinstance(val, (list, tuple)):
         return val
     else:
         return [val]

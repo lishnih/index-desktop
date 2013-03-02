@@ -2,11 +2,13 @@
 # coding=utf-8
 # Stan 2013-02-22
 
-import os
+import os, re, pickle
+from PySide import QtCore
 
-from models import Doc                  # Общее для всех (документ)
-from models import Piece, Piece_entry   # Входной контроль
-from models import Joint, Joint_entry   # Сварка, НК
+
+# Настройки: [HKCU\Software\lishnih@gmail.com\<app_section>]
+company_section = "lishnih@gmail.com"
+app_section = re.sub(r'\W', '_', os.path.dirname(os.path.dirname(__file__)))
 
 
 if os.name == 'posix':
@@ -19,7 +21,8 @@ elif os.name == 'nt':
 ### Входной контроль         ###
 ################################
 
-vt_register_config = {
+vt_register = {
+    'description':      u"Для обработки директории 'Входной контроль'",
 #   'dirs_filter':      u'',
 #   'dirs_level':       0,
     'files_filter':     u'/^.+\.xlsx?$/',
@@ -28,8 +31,8 @@ vt_register_config = {
     'table': {
         'row_start':        5,
         'check_column':     'C',
-        'row_objects':      Piece_entry,
-        'row_objects1':     (Doc, Piece),
+        'row_objects':      'Piece_entry',
+        'row_objects1':     ('Doc', 'Piece'),
         'col_names': [
             'y',                # A
             'date',
@@ -62,7 +65,8 @@ vt_register_config = {
 }
 
 
-packlist_21_config = {
+packlist_21 = {
+    'description':      u"Для обработки директории 'photo/Входной контроль (21) КУ'",
 #   'dirs_filter':      u'',
 #   'dirs_level':       0,
     'files_filter':     u'/^.+\.xlsx?$/',
@@ -71,8 +75,8 @@ packlist_21_config = {
     'table':    {
         'row_start':        3,
         'check_column':     'D',
-        'row_objects':      Piece_entry,
-        'row_objects1':     Piece,
+        'row_objects':      'Piece_entry',
+        'row_objects1':     'Piece',
         'col_names': [
             '',
             '',
@@ -90,7 +94,8 @@ packlist_21_config = {
 }
 
 
-ss_report_config = {
+ss_report = {
+    'description':      u"Для обработки файла 'Входной контроль/1. КЗЛМК/Consolidated Report Steel Structure.xls'",
 #   'dirs_filter':      u'',
 #   'dirs_level':       0,
     'files_filter':     u'/^.+\.xlsx?$/',
@@ -99,8 +104,8 @@ ss_report_config = {
     'table':    {
         'row_start':        6,
         'check_column':     'D',
-        'row_objects':      Piece_entry,
-        'row_objects1':     (Doc, Piece),
+        'row_objects':      'Piece_entry',
+        'row_objects1':     ('Doc', 'Piece'),
         'col_names': [
             'y',                # A
             '',
@@ -132,7 +137,8 @@ ss_report_config = {
 ### Сварка                   ###
 ################################
 
-welding_config = {
+welding = {
+    'description':      u"Для обработки директории 'Сводная таблица/Сварочные журналы'",
 #   'dirs_filter':      u'',
 #   'dirs_level':       0,
     'files_filter':     u'/^.+\.xlsx?$/',
@@ -141,8 +147,8 @@ welding_config = {
     'table':    {
         'row_start':        3,
         'check_column':     'C',
-        'row_objects':      Joint_entry,
-        'row_objects1':     Joint,
+        'row_objects':      'Joint_entry',
+        'row_objects1':     'Joint',
         'col_names': [
             '',
             'date',
@@ -178,7 +184,8 @@ welding_config = {
 ### Неразрушающий контроль   ###
 ################################
 
-ndt_register_config = {
+ndt_register = {
+    'description':      u"Для обработки директории 'Сводная таблица/Журналы контроля'",
 #   'dirs_filter':      None,
 #   'dirs_level':       0,
 #   'files_filter':     None,
@@ -187,8 +194,8 @@ ndt_register_config = {
     'table':    {
         'row_start':        4,
         'check_column':     'I',
-        'row_objects':      Joint_entry,
-        'row_objects1':     (Doc, Joint),
+        'row_objects':      'Joint_entry',
+        'row_objects1':     ('Doc', 'Joint'),
         'col_names': [
             'y',
             'joint',
@@ -211,46 +218,27 @@ ndt_register_config = {
 }
 
 
-presets = {
-    u'{}/Входной контроль'.format(homepath):
-    {
-        'enabled':      1,
-        'taskname':     u'Журналы ВК',
-        'config':       vt_register_config,
-    },
+def save_entry(filename, entry):
+    with open(filename, 'wb') as f:
+        pickle.dump(entry, f)
 
-    u'{}/photo/Входной контроль (21) КУ'.format(homepath):
-    {
-        'enabled':      1,
-        'taskname':     u'Журналы ВК',
-        'config':       packlist_21_config,
-    },
 
-    u'{}/Входной контроль/1. КЗЛМК/Consolidated Report Steel Structure.xls'.format(homepath):
-    {
-        'enabled':      1,
-        'taskname':     u'Накладные МК',
-        'config':       ss_report_config,
-    },
+def main():
+    settings = QtCore.QSettings(company_section, app_section)
+    print u"Settings: '{}' / '{}'".format(company_section, app_section)
 
-    u'{}/Сводная таблица/Сварочные журналы'.format(homepath):
-    {
-        'enabled':      1,
-        'taskname':     u'Сварочные журналы',
-        'config':       welding_config,
-    },
+    appdata = settings.value("appdata")
+    if not appdata:
+        print u"Запустите крипт index, чтобы инициализировать директорию с данными"
+        return
 
-    u'{}/Сводная таблица/Журналы контроля'.format(homepath):
-    {
-        'enabled':      1,
-        'taskname':     u'Журналы контроля',
-        'config':       ndt_register_config,
-    },
+    print u"Export to '{}'".format(appdata)
 
-#     u'{}/Сводная таблица/Журналы стилоскопирования'.format(homepath):
-#     {
-#         'enabled':      1,
-#         'taskname':     u'Журналы стилоскопирования',
-#         'config':       ss_register_config,
-#     },
-}
+    for key, value in globals().items():
+        if isinstance(value, dict):
+            filename = os.path.join(appdata, "{}.pickle".format(key))
+            save_entry(filename, value)
+
+
+if __name__ == '__main__':
+    main()

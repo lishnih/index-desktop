@@ -39,9 +39,10 @@ def reg_exception(OBJ, Exception, e, *args, **kargs):
 Были переданый следующие параметры:
 args: {!r}
 kargs: {!r}
-===
-{}
-)))))))\n""".format(e, Exception, args, kargs, tb_msg)
+===\n""".format(e, Exception, args, kargs)
+    try:    msg += tb_msg
+    except: msg += repr(tb_msg)
+    msg += u")))))))\n"
 
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setError(msg)
