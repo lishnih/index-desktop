@@ -52,7 +52,7 @@ class Thread(QtCore.QThread):
         if self.func:
             try:
                 self.message = self.func(*self.args, **self.kargs)
-            except Exception, e:
+            except Exception as e:
                 msg = u"Завершено с ошибкой: '{}'".format(e)
                 logging.exception(msg)
                 self.message = msg

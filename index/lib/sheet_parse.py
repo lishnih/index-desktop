@@ -14,25 +14,25 @@ from lib.sheet_funcs import get_value, get_index
 from lib.xlrd_macro import search_value
 
 
-def e_func(func_name, Exception, e, *args, **kargs):
+def e_func(func_name, e, *args, **kargs):
     OBJ = args[2]
     e = "/Error in '{}'/ {}".format(func_name, e)
-    reg_exception(OBJ, Exception, e, *args, **kargs)
+    reg_exception(OBJ, e, *args, **kargs)
 
 
 def parse_doc(sh, options, SHEET):
-    doc_values = options.get('doc_values', [])
+    doc_values = options.get('doc_values', {})
     doc_funcs  = options.get('doc_funcs', {})
 
     doc_objects  = get_list(options.get('doc_objects'))
     doc_objects1 = get_list(options.get('doc_objects1'))
 
-    TASK = SHEET._file._dir._task
+    TASK = SHEET._file._dir._source._task
     doc_dict = dict(_task=TASK)
     test = ''
 
     last_y, last_x = None, None
-    for key, params in doc_values:
+    for key, params in doc_values.items():
         l = len(params)
         if isinstance(params, basestring):
             yx = search_value(sh, params)
@@ -69,9 +69,16 @@ def parse_doc(sh, options, SHEET):
             doc_dict[key] = val
             test += u"{} [{},{},{}]: '{}'\n".format(key, y, x, pattern, val)
 
+    remarks = {}
     for item, funcs_name in doc_funcs.items():
         for func_name in get_list(funcs_name):
-            call(func_name, doc_dict, item, SHEET, error_callback=e_func)
+            remarks1 = []
+            call(func_name, doc_dict, item, remarks1, error_callback=e_func)
+            if remarks1:
+                remarks[func_name] = remarks1
+    if remarks:
+        reg_warning(SHEET)
+        SHEET.remarks = remarks
 
     if test:
         doc_dict['test'] = test
@@ -152,9 +159,16 @@ def parse_table_iter(sh, options, SHEET):
                             inner_row += 1
                 col += 1
 
+            remarks = {}
             for item, funcs_name in col_funcs.items():
                 for func_name in get_list(funcs_name):
-                    call(func_name, row_dict, item, SHEET, error_callback=e_func)
+                    remarks1 = []
+                    call(func_name, row_dict, item, remarks1, error_callback=e_func)
+                    if remarks1:
+                        remarks[func_name] = remarks1
+            if remarks:
+                reg_warning(SHEET)
+                SHEET.remarks = remarks
 
             if test:
                 row_dict['test'] = test
@@ -174,8 +188,8 @@ def parse_table_iter(sh, options, SHEET):
 
 #                 try:
 #                     DBSession.commit()
-#                 except Exception, e:
-#                     reg_exception(SHEET, Exception, e, name, source)
+#                 except Exception as e:
+#                     reg_exception(SHEET, e, name, source)
 
                 link_objects(SHEET, *ROWS)
 

@@ -10,12 +10,12 @@ from lib.items import DirItem, FileItem
 from reg.result import reg_warning, reg_error, reg_exception
 
 
-def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=None):
+def reg_object(Object, object_dict, PARENT=None, style='', brief=None):
     if isinstance(Object, basestring):
         try:
-            Object = models.__getattribute__(Object)
+            Object = getattr(models, Object)
         except:
-            OBJECT = set_object(object_dict, PARENT, style, brief, summary)
+            OBJECT = set_object(object_dict, PARENT, style, brief)
             reg_error(OBJECT, u"Объект не найден: '{}'!".format(Object), Object, object_dict)
             return OBJECT
 
@@ -31,7 +31,7 @@ def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=N
 
     # Графика
     if style != None:
-        show_object(OBJECT, PARENT, style=style, brief=brief, summary=summary)
+        show_object(OBJECT, PARENT, style=style, brief=brief)
 
         for key, val in object_debug.items():
             key = u"_debug_{}".format(key)
@@ -42,12 +42,12 @@ def reg_object(Object, object_dict, PARENT=None, style='', brief=None, summary=N
     return OBJECT
 
 
-def reg_object1(Object, object_dict, PARENT=None, style='', brief=None, summary=None):
+def reg_object1(Object, object_dict, PARENT=None, style='', brief=None):
     if isinstance(Object, basestring):
         try:
             Object = models.__getattribute__(Object)
         except:
-            OBJECT = set_object(object_dict, PARENT, style, brief, summary)
+            OBJECT = set_object(object_dict, PARENT, style, brief)
             reg_error(OBJECT, u"Объект не найден: '{}'!".format(Object), Object, object_dict)
             return OBJECT
 
@@ -66,25 +66,25 @@ def reg_object1(Object, object_dict, PARENT=None, style='', brief=None, summary=
             if l > 1:
 #               cond_output = [unicode(i) for i in cond]
                 reg_error(PARENT, u"Найдено несколько одинаковых записей ({})!".format(l), Object, object_find)
-            show_object(OBJECT, PARENT, style=style, brief=brief, summary=summary)
+            show_object(OBJECT, PARENT, style=style, brief=brief)
             return OBJECT
-    except Exception, e:
-        reg_exception(PARENT, Exception, e, Object, object_find)
+    except Exception as e:
+        reg_exception(PARENT, e, Object, object_find)
 
-    OBJECT = reg_object(Object, object_dict, PARENT=PARENT, style=style, brief=brief, summary=summary)
+    OBJECT = reg_object(Object, object_dict, PARENT=PARENT, style=style, brief=brief)
 
     return OBJECT
 
 
-def set_object(OBJECT, PARENT, style='', brief=None, summary=None):
+def set_object(OBJECT, PARENT, style='', brief=None):
     if isinstance(OBJECT, dict):
         OBJECT = aObject(**OBJECT)
-    show_object(OBJECT, PARENT, style=style, brief=brief, summary=summary)
+    show_object(OBJECT, PARENT, style=style, brief=brief)
 
     return OBJECT
 
 
-def set_object1(OBJECT, PARENT, style='', brief=None, summary=None):
+def set_object1(OBJECT, PARENT, style='', brief=None):
     if isinstance(OBJECT, dict):
         OBJECT = aObject(**OBJECT)
     count = PARENT.tree_item.childCount()
@@ -100,12 +100,12 @@ def set_object1(OBJECT, PARENT, style='', brief=None, summary=None):
     if tree_item:
         OBJECT.tree_item = tree_item
     else:
-        show_object(OBJECT, PARENT, style=style, brief=brief, summary=summary)
+        show_object(OBJECT, PARENT, style=style, brief=brief)
 
     return OBJECT
 
 
-def show_object(OBJECT, PARENT, style='', brief=None, summary=None):
+def show_object(OBJECT, PARENT, style='', brief=None):
     if isinstance(PARENT, QtGui.QTreeWidget):
         tree_item = PARENT
         style = 'BIE'
@@ -116,12 +116,10 @@ def show_object(OBJECT, PARENT, style='', brief=None, summary=None):
         tree_item = None
 
     if tree_item:
-        if summary is None:
-            summary = OBJECT
         if not hasattr(OBJECT, 'name'):
             setattr(OBJECT, 'name', 'noname')
         name = unicode(OBJECT.name)
-        OBJECT.tree_item = FileItem(tree_item, name, brief=brief, summary=summary)
+        OBJECT.tree_item = FileItem(tree_item, name, brief=brief, summary=OBJECT)
 
         if style:
             OBJECT.tree_item.set_style(style)

@@ -19,37 +19,43 @@ for i in dir(xls_funcs):
 
 
 def empty_func(*args, **kargs):
-    logging.warning(u"Вызвана заглушка!")
+    msg = u"""(((((((
+Вызвана заглушка с параметрами:
+args: {!r}
+kargs: {!r}
+)))))))\n""".format(args, kargs)
+    logging.warning(msg)
+
+
+def default_error_callback(func_name, e, *args, **kargs):
+    msg = u"""(((((((
+Функция '{}' вызвала ошибку:
+{}!
+Были переданый следующие параметры:
+args: {!r}
+kargs: {!r}
+)))))))\n""".format(func_name, e, args, kargs)
+    logging.error(msg)
 
 
 def get(func_name):
-    global functions
-
     if func_name not in functions:
         logging.warning(u"Функция не найдена: {}, используем заглушку!".format(func_name))
+        functions[func_name] = empty_func
 
-    func = functions.get(func_name, empty_func)
+    func = functions.get(func_name)
     return func
 
 
 def call(func_name, *args, **kargs):
     func = get(func_name)
-    error_callback = kargs.pop('error_callback', None)
+    error_callback = kargs.pop('error_callback', default_error_callback)
 
     try:
         res = func(*args, **kargs)
-    except Exception, e:
+    except Exception as e:
         if error_callback:
-            error_callback(func_name, Exception, e, *args, **kargs)
-        else:
-            msg = u"""(((((((
-Функция '{}' вызвала ошибку:
-{} ({!r})!
-Были переданый следующие параметры:
-args: {!r}
-kargs: {!r}
-)))))))\n""".format(func_name, e, Exception, args, kargs)
-            logging.exception(msg)
+            error_callback(func_name, e, *args, **kargs)
         res = None
 
     return res

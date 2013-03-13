@@ -75,7 +75,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def OnTaskDir(self):
         if th.isRunning():
-            print "running..."
+            print("running...")
             return
 
         # Предлагаем выбрать пользователю директорию
@@ -99,7 +99,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def OnTaskFile(self):
         if th.isRunning():
-            print "running..."
+            print("running...")
             return
 
         # Предлагаем выбрать пользователю файл
@@ -121,7 +121,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def OnClose(self):
         if th.isRunning():
-            print "running..."
+            print("running...")
             return
 
         self.ui.tree.clear()
@@ -258,17 +258,17 @@ class MainFrame(QtGui.QMainWindow):
 
     def proceed_args(self, args):
         if args.datadir:
-            print u"Директория для данных: '{}'".format(self.settings.value("appdata"))
+            print(u"Директория для данных: '{}'".format(self.settings.value("appdata")))
             sys.exit(0)
 
         if args.setdatadir:
-            print u"Назначение новой директории для данных!"
-            try:    print u"Было      | {}".format(self.settings.value("appdata"))
-            except: print u"Было      | {!r}".format(self.settings.value("appdata"))
+            print(u"Назначение новой директории для данных!")
+            try:    print(u"Было      | {}".format(self.settings.value("appdata")))
+            except: print(u"Было      | {!r}".format(self.settings.value("appdata")))
             newdir = self.expand_path(args.setdatadir)
             self.settings.setValue("appdata", newdir)
-            try:    print u"Назначено | {}".format(self.settings.value("appdata"))
-            except: print u"Назначено | {!r}".format(self.settings.value("appdata"))
+            try:    print(u"Назначено | {}".format(self.settings.value("appdata")))
+            except: print(u"Назначено | {!r}".format(self.settings.value("appdata")))
             sys.exit(0)
 
         if args.files:

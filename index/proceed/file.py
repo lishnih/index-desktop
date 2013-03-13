@@ -16,10 +16,10 @@ from lib.data_funcs import filter_match, filter_list
 def proceed_file(filename, options, DIR):
     try:
         proceed_file2(filename, options, DIR)
-    except Exception, e:
+    except Exception as e:
         file_dict = dict(_dir=DIR, name=filename)
         FILE = set_object(file_dict, DIR)
-        reg_exception(FILE, Exception, e)
+        reg_exception(FILE, e)
 
 
 def proceed_file2(filename, options, DIR):

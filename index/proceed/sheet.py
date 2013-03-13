@@ -6,7 +6,9 @@ import re
 import xlrd
 
 from reg import reg_object
+from reg.result import reg_warning
 from models import Sheet
+from lib.sheet_funcs import get_str
 from lib.sheet_parse import parse_doc, parse_table
 
 
@@ -19,17 +21,33 @@ def proceed_sheet(sh, options, FILE, i=None):
     SHEET = reg_object(Sheet, sheet_dict, PARENT=FILE)
 
     sheet_test = options.get('sheet_test')
+    groups = ()
     if sheet_test:
         row, col, test_pattern = sheet_test
         test_cell = get_str(sh, row, col)
         res = re.search(test_pattern, test_cell)
         if res:
+            groups = res.groups()
             SHEET.sheet_test = test_cell
+            SHEET.groups = groups
+        else:
+            msg = u"В ({},{}) ожидается: '{}', найдено: '{}'".format(row, col, test_pattern, test_cell)
+            reg_warning(SHEET, msg)
 
-    if 'doc' in options:
-        doc_options = options.get('doc')
+    depth = options
+    section = ["<options>"]
+    for i in groups:
+        if i in depth:
+            depth = depth.get(i)
+            section.append(i)
+    SHEET.section = section
+
+    doc_options = depth.get('doc')
+    if doc_options:
+        SHEET.doc_options = doc_options
         parse_doc(sh, doc_options, SHEET)
 
-    if 'table' in options:
-        table_options = options.get('table')
+    table_options = depth.get('table')
+    if table_options:
+        SHEET.table_options = table_options
         parse_table(sh, table_options, SHEET)

@@ -53,5 +53,5 @@ if __name__ == '__main__':
     DBSession = initDb()
     initlinks(Base)
 
-    print foreign_keys
-    print foreign_keys_c
+    print(foreign_keys)
+    print(foreign_keys_c)

@@ -37,10 +37,10 @@ def Proceed(sources, args, datadir=None, tree_widget=None):
     db_uri = options.get('db_uri', db_uri_default)
     try:
         initDb(db_uri, DBSession, Base)
-    except Exception, e:
+    except Exception as e:
         root_dict = dict(name="Root")
         tree_item = set_object(root_dict, tree_widget, brief=[sources, datadir])
-        reg_exception(tree_item, Exception, e)
+        reg_exception(tree_item, e)
         return
 
     sources = get_list(sources)
@@ -97,8 +97,8 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
 
     try:
         DBSession.commit()
-    except Exception, e:    # StatementError
-        reg_exception(SOURCE, Exception, e)
+    except Exception as e:    # StatementError
+        reg_exception(SOURCE, e)
 
 
 def main(args=None):

@@ -1,10 +1,9 @@
 # coding=utf-8
 # Stan 2007-10-10, 2012-10-28
 """
-*** Библиотека ***
-Интерфейс PySide-Db для работы c модулем xlrd
+Интерфейс для работы c модулем xlrd
 """
-import re                       # регулярные выражения
+import re, logging
 import xlrd                     # XLS reader
 
 
@@ -32,8 +31,8 @@ def contain_value(sh, row, col, seaching_value):
             try:
                 val = type2(val)
             except:
-#                 print "search: %s (%s)" % (seaching_value, type(seaching_value))
-#                 print "found:  %s (%s)" % (val, type(val))
+#               logging.debug("search: {!r} ({!r})".format(seaching_value, type(seaching_value)))
+#               logging.debug("found:  {!r} ({!r})".format(val, type(val)))
                 return None
 
         if isinstance(seaching_value, basestring):
@@ -75,13 +74,13 @@ def search_hor_value(sh, formsearch):
         str = get_value(sh, y0, x0)
         try:
             res = re.match(pattern, str, re.MULTILINE | re.DOTALL)
-        except Exception, e:
-            print u"Ошибка при выборке данных!"
-            print u"Проверьте ячейки, из которой извлекаются данные"
-            print u"Возможно, у Вас неправильно настроен шаблон"
-            print e
-            print u"pattern: %s" % pattern
-            print u"str:     %s" % str
+        except Exception as e:
+            logging.error(u"""Ошибка при выборке данных!
+Проверьте ячейки, из которой извлекаются данные
+Возможно, у Вас неправильно настроен шаблон
+{!r}
+pattern: {!r}
+str:     {!r}""".format(e, pattern, str))
             res = None
         if res:
             reslist = res.groups()
@@ -131,6 +130,6 @@ def search_hor_value(sh, formsearch):
                         found.append("")
 
     else:
-        print u"Неправильный formsearch [%s]" % form_len
+        logging.error(u"Неправильный formsearch [{}]".format(form_len))
 
     return [x0, y0, found] if found else hint

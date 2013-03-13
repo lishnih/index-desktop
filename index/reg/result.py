@@ -8,13 +8,15 @@ import logging, traceback
 def reg_ok(OBJ, msg=''):
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setOk(msg)
-
-
-def reg_warning(OBJ, msg='', echo=None):
-    if echo:
+    else:
         logging.warning(msg)
+
+
+def reg_warning(OBJ, msg=''):
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setWarning(msg)
+    else:
+        logging.warning(msg)
 
 
 def reg_error(OBJ, msg='', *args, **kargs):
@@ -31,15 +33,15 @@ kargs: {!r}
         logging.error(msg)
 
 
-def reg_exception(OBJ, Exception, e, *args, **kargs):
+def reg_exception(OBJ, e, *args, **kargs):
     tb_msg = traceback.format_exc()
 
     msg = u"""(((((((
-Ошибка '{}' ({!r})!
+Ошибка '{}'!
 Были переданый следующие параметры:
 args: {!r}
 kargs: {!r}
-===\n""".format(e, Exception, args, kargs)
+===\n""".format(e, args, kargs)
     try:    msg += tb_msg
     except: msg += repr(tb_msg)
     msg += u")))))))\n"
