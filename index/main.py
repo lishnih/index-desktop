@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2011-06-22
 
-import sys
+import sys, logging
 from PySide import QtCore, QtGui
 
 from mainframe import MainFrame             # Основное окно
@@ -29,6 +29,8 @@ def main(args=None):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     import argparse
     from lib.argparse_funcs import readable_dir, readable_file_or_dir_list
 
@@ -45,5 +47,11 @@ if __name__ == '__main__':
                         help='set data directory', metavar='DATADIR')
 
     args = parser.parse_args()
+
+    from lib.argparse_funcs import try_to_decode
+    if 'task' in args:
+        args.task = try_to_decode(args.task)
+    if 'method' in args:
+        args.method = try_to_decode(args.method)
 
     sys.exit(main(args))

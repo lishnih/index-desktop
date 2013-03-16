@@ -75,6 +75,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="methodButton">
+       <property name="text">
+        <string>Select Method</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="sourcesButton">
        <property name="text">
         <string>View sources</string>
@@ -94,6 +101,38 @@
  </widget>
  <resources/>
  <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>652</x>
+     <y>106</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>652</x>
+     <y>106</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>349</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
   <connection>
    <sender>sourcesButton</sender>
    <signal>clicked()</signal>
@@ -135,38 +174,6 @@
     <hint type="sourcelabel">
      <x>652</x>
      <y>278</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>349</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>106</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>349</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>652</x>
-     <y>106</y>
     </hint>
     <hint type="destinationlabel">
      <x>349</x>

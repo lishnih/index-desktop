@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'dialog_settings_test.ui'
+# Form implementation generated from reading ui file 'D:\opt\home\index\desktop\mainframe\dialog_settings_test.ui'
 #
-# Created: Sat Mar 02 23:46:05 2013
+# Created: Fri Mar 15 20:31:28 2013
 #      by: pyside-uic 0.2.14 running on PySide 1.1.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,6 +51,9 @@ class Ui_Dialog(object):
         self.proceedButton = QtGui.QPushButton(Dialog)
         self.proceedButton.setObjectName("proceedButton")
         self.verticalLayout.addWidget(self.proceedButton)
+        self.methodButton = QtGui.QPushButton(Dialog)
+        self.methodButton.setObjectName("methodButton")
+        self.verticalLayout.addWidget(self.methodButton)
         self.sourcesButton = QtGui.QPushButton(Dialog)
         self.sourcesButton.setObjectName("sourcesButton")
         self.verticalLayout.addWidget(self.sourcesButton)
@@ -60,11 +63,11 @@ class Ui_Dialog(object):
         self.horizontalLayout.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), Dialog.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), Dialog.reject)
         QtCore.QObject.connect(self.sourcesButton, QtCore.SIGNAL("clicked()"), Dialog.OnViewSources)
         QtCore.QObject.connect(self.proceedButton, QtCore.SIGNAL("clicked()"), Dialog.OnProceed)
         QtCore.QObject.connect(self.deleteButton, QtCore.SIGNAL("clicked()"), Dialog.OnDelete)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"), Dialog.accept)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"), Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
@@ -72,6 +75,7 @@ class Ui_Dialog(object):
         self.line2Label.setText(QtGui.QApplication.translate("Dialog", "Line2", None, QtGui.QApplication.UnicodeUTF8))
         self.line1Label.setText(QtGui.QApplication.translate("Dialog", "Line1", None, QtGui.QApplication.UnicodeUTF8))
         self.proceedButton.setText(QtGui.QApplication.translate("Dialog", "Proceed", None, QtGui.QApplication.UnicodeUTF8))
+        self.methodButton.setText(QtGui.QApplication.translate("Dialog", "Select Method", None, QtGui.QApplication.UnicodeUTF8))
         self.sourcesButton.setText(QtGui.QApplication.translate("Dialog", "View sources", None, QtGui.QApplication.UnicodeUTF8))
         self.deleteButton.setText(QtGui.QApplication.translate("Dialog", "Delete", None, QtGui.QApplication.UnicodeUTF8))
 

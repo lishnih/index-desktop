@@ -91,7 +91,7 @@ def init_task_item_from_dnd(parent, sources=None, pos=None):
 def update_row(task):
     TASK = task.get('_ROW')
     if not TASK:
-        print "Error in task: {!r}".format(task)
+        print("Error in task: {!r}".format(task))
 
     pos = task.get('pos')
     if pos:
@@ -101,15 +101,15 @@ def update_row(task):
 
 
 def update_column(task, key, value):
-    print key, task.get(key), value
+    print(key, task.get(key), value)
     task[key] = value
 
 #   task_schema = Task.__table__
     TASK = task.get('_ROW')
     try:
         setattr(TASK, key, value)
-    except Exception, e:
-        print u"Не удалось обновить запись".format(e)
+    except Exception as e:
+        print(u"Не удалось обновить запись".format(e))
 
 
 def append_source(TASK, sources):

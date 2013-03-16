@@ -151,31 +151,31 @@ class MainFrame(QtGui.QMainWindow):
 
     def proceed_args(self, args):
         if args.datadir:
-            print u"Директория для данных: '{}'".format(self.settings.value("appdata"))
+            print(u"Директория для данных: '{}'".format(self.settings.value("appdata")))
             sys.exit(0)
 
         if args.setdatadir:
-            print u"Назначение новой директории для данных!"
-            try:    print u"Было      | {}".format(self.settings.value("appdata"))
-            except: print u"Было      | {!r}".format(self.settings.value("appdata"))
+            print(u"Назначение новой директории для данных!")
+            try:    print(u"Было      | {}".format(self.settings.value("appdata")))
+            except: print(u"Было      | {!r}".format(self.settings.value("appdata")))
             newdir = self.expand_path(args.setdatadir)
             self.settings.setValue("appdata", newdir)
-            try:    print u"Назначено | {}".format(self.settings.value("appdata"))
-            except: print u"Назначено | {!r}".format(self.settings.value("appdata"))
+            try:    print(u"Назначено | {}".format(self.settings.value("appdata")))
+            except: print(u"Назначено | {!r}".format(self.settings.value("appdata")))
             sys.exit(0)
 
         if args.indexscript:
-            print u"Директория скрипта index: '{}'".format(self.settings.value("indexscript"))
+            print(u"Директория скрипта index: '{}'".format(self.settings.value("indexscript")))
             sys.exit(0)
 
         if args.setindexscript:
-            print u"Назначение директории скрипта index!"
-            try:    print u"Было      | {}".format(self.settings.value("indexscript"))
-            except: print u"Было      | {!r}".format(self.settings.value("indexscript"))
+            print(u"Назначение директории скрипта index!")
+            try:    print(u"Было      | {}".format(self.settings.value("indexscript")))
+            except: print(u"Было      | {!r}".format(self.settings.value("indexscript")))
             newdir = self.expand_path(args.setindexscript)
             self.settings.setValue("indexscript", newdir)
-            try:    print u"Назначено | {}".format(self.settings.value("indexscript"))
-            except: print u"Назначено | {!r}".format(self.settings.value("indexscript"))
+            try:    print(u"Назначено | {}".format(self.settings.value("indexscript")))
+            except: print(u"Назначено | {!r}".format(self.settings.value("indexscript")))
             sys.exit(0)
 
 

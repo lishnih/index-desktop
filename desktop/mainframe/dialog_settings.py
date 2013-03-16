@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2013-02-08
 
-import sys, subprocess, multiprocessing
+import sys, subprocess, multiprocessing, logging
 from PySide import QtCore, QtGui
 
 
@@ -15,8 +15,7 @@ from task_item import redraw_task, mark_task_deleted, update_column
 
 def worker(*args):
     args, indexscript = args
-    print u"Cwd:", indexscript
-    print u"Запуск процесса с параметрами:", args
+    logging.info(u"Cwd: {}".format(indexscript))
 
     # Кодируем строки в пендосовскою кодировку
     newargs = []
@@ -25,7 +24,7 @@ def worker(*args):
             arg = arg.encode('utf-8')
         newargs.append(arg)
     args = newargs
-    print u"Запуск процесса с параметрами:", args
+    logging.info(u"Запуск процесса с параметрами: {!r}".format(args))
 
 #   args = [sys.executable, 'main.py', '--help']
     proc = subprocess.Popen(args, stderr=subprocess.STDOUT, cwd=indexscript)
@@ -111,26 +110,24 @@ class Settings(QtGui.QDialog):
 
 
     def OnProceed(self):
-        indexscript = self.settings.value("indexscript")
-        if not indexscript:
-            print u"Скрипт index не задан!"
-            print u"Задать директорию скрипта можно с помощью команды:"
-            print u"main.py --setindexscript DIR"
-            return
-
-        args = [sys.executable, 'main.py']
-
-        TASK = self.taskData.get('_ROW')
-        method = TASK.method
-        if method:
-            args.extend(['--method', method])
-
-        sources = [i.name for i in TASK.sources]
-        if sources:
-            args.extend(sources)
-
-        p = multiprocessing.Process(target=worker, args=(args, indexscript))
-        p.start()
+        indexscript = self.get_indexscript()
+        if indexscript:
+            args = [sys.executable, 'main.py']
+    
+            TASK = self.taskData.get('_ROW')
+            name = TASK.name
+            if name:
+                args.extend(['--task', name])
+            method = TASK.method
+            if method:
+                args.extend(['--method', method])
+    
+            sources = [i.name for i in TASK.sources]
+            if sources:
+                args.extend(sources)
+    
+            p = multiprocessing.Process(target=worker, args=(args, indexscript))
+            p.start()
 
 
     def OnDelete(self):
@@ -169,11 +166,22 @@ class Settings(QtGui.QDialog):
             try:
                 value2 = type1(value2)
             except:
-                print u"Не могу конвертировать {} в тип {}".format(value2, type1)
+                print(u"Не могу конвертировать {} в тип {}".format(value2, type1))
                 return
 
         if value1 != value2:
             return True
+
+
+    def get_indexscript(self):
+        indexscript = self.settings.value("indexscript")
+        if not indexscript:
+            QtGui.QMessageBox.warning(None, "Warning",
+                u"""Скрипт index не задан!
+Задать директорию скрипта можно с помощью команды:"
+main.py --setindexscript DIR""")
+
+        return indexscript
 
 
 
@@ -203,6 +211,9 @@ class Ui_Dialog(object):
         self.proceedButton = QtGui.QPushButton(Dialog)
         self.proceedButton.setObjectName("proceedButton")
         self.verticalLayout.addWidget(self.proceedButton)
+        self.methodButton = QtGui.QPushButton(Dialog)
+        self.methodButton.setObjectName("methodButton")
+        self.verticalLayout.addWidget(self.methodButton)
         self.sourcesButton = QtGui.QPushButton(Dialog)
         self.sourcesButton.setObjectName("sourcesButton")
         self.verticalLayout.addWidget(self.sourcesButton)
@@ -222,5 +233,6 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Parameters", None, QtGui.QApplication.UnicodeUTF8))
         self.proceedButton.setText(QtGui.QApplication.translate("Dialog", "Proceed", None, QtGui.QApplication.UnicodeUTF8))
+        self.methodButton.setText(QtGui.QApplication.translate("Dialog", "Select Method", None, QtGui.QApplication.UnicodeUTF8))
         self.sourcesButton.setText(QtGui.QApplication.translate("Dialog", "View sources", None, QtGui.QApplication.UnicodeUTF8))
         self.deleteButton.setText(QtGui.QApplication.translate("Dialog", "Delete", None, QtGui.QApplication.UnicodeUTF8))

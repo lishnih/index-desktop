@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2011-06-22
 
-import sys
+import sys, logging
 from PySide import QtCore, QtGui
 
 from mainframe import MainFrame             # Основное окно
@@ -29,6 +29,8 @@ def main(args=None):
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+
     import argparse
     from lib.argparse_funcs import readable_dir
 
