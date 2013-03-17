@@ -5,21 +5,28 @@
 import logging, traceback
 
 
-def reg_ok(OBJ, msg=''):
+def reg_debug(OBJ, msg=None):
+    if OBJ and hasattr(OBJ, 'tree_item'):
+        OBJ.tree_item.appendBrief(msg, once=True)
+    else:
+        logging.debug(msg)
+
+
+def reg_ok(OBJ, msg=None):
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setOk(msg)
     else:
-        logging.warning(msg)
+        logging.info(msg)
 
 
-def reg_warning(OBJ, msg=''):
+def reg_warning(OBJ, msg=None):
     if OBJ and hasattr(OBJ, 'tree_item'):
         OBJ.tree_item.setWarning(msg)
     else:
         logging.warning(msg)
 
 
-def reg_error(OBJ, msg='', *args, **kargs):
+def reg_error(OBJ, msg=None, *args, **kargs):
     msg = u"""(((((((
 Ошибка '{}'!
 Были переданый следующие параметры:

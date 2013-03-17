@@ -18,7 +18,15 @@ class Item(QtGui.QTreeWidgetItem):
 
 
     def setBrief(self, brief=None):
-        self.setData(0, QtCore.Qt.UserRole, brief)
+        self.setData(0, QtCore.Qt.UserRole, [brief])
+
+
+    def appendBrief(self, brief, once=False):
+        if brief:
+            brief_list = self.data(0, QtCore.Qt.UserRole)
+            if not(once and brief in brief_list):
+                brief_list.append(brief)
+            self.setData(0, QtCore.Qt.UserRole, brief_list)
 
 
     def setSummary(self, summary=None):
@@ -26,73 +34,18 @@ class Item(QtGui.QTreeWidgetItem):
 
 
     def setOk(self, message=None):
-        if not message:
-            message = u"Обработка этого элемента прошла успешно!"
-
-        brief = self.data(0, QtCore.Qt.UserRole)
-        brief = u"{}\n---\n{}".format(message, brief)
-        self.setBrief(brief)
+        self.appendBrief(message)
         self.setResult(0)
 
 
     def setWarning(self, message=None):
-        if not message:
-            message = u"Обработка этого элемента прошла с замечаниями!"
-
-        brief = self.data(0, QtCore.Qt.UserRole)
-        brief = u"{}\n---\n{}".format(message, brief)
-        self.setBrief(brief)
+        self.appendBrief(message)
         self.setResult(-1)
-
-        if isinstance(self.parent, Item):
-            self.parent.setChildWarning(message, self)
 
 
     def setError(self, message=None):
-        if not message:
-            message = u"Обработка этого элемента прошла с ошибками!"
-
-        brief = self.data(0, QtCore.Qt.UserRole)
-        brief = u"{}\n---\n{}".format(message, brief)
-        self.setBrief(brief)
+        self.appendBrief(message)
         self.setResult(-2)
-
-        if isinstance(self.parent, Item):
-            self.parent.setChildError(message, self)
-
-
-    def setChildWarning(self, message=None, reason_item=None):
-        if not message:
-            message = u"Обработка элемента прошла с замечаниями!"
-
-        if reason_item:
-            item_name = reason_item.text(0)
-            message = u"[{}] {}".format(item_name, message)
-
-        brief = self.data(0, QtCore.Qt.UserRole)
-        brief = u"{}\n---\n{}".format(brief, message)
-        self.setBrief(brief)
-        self.setResult(-1)
-
-        if isinstance(self.parent, Item):
-            self.parent.setChildWarning(message)
-
-
-    def setChildError(self, message=None, reason_item=None):
-        if not message:
-            message = u"Обработка элемента прошла с ошибками!"
-
-        if reason_item:
-            item_name = reason_item.text(0)
-            message = u"[{}] {}".format(item_name, message)
-
-        brief = self.data(0, QtCore.Qt.UserRole)
-        brief = u"{}\n---\n{}".format(brief, message)
-        self.setBrief(brief)
-        self.setResult(-2)
-
-        if isinstance(self.parent, Item):
-            self.parent.setChildError(message)
 
 
 # setResult - для внутреннего использования

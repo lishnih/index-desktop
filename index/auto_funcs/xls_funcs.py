@@ -7,6 +7,12 @@ import re
 from lib.sheet_funcs import get_date
 
 
+def prepare_str(_dict, item, remarks):
+    val = _dict.get(item)
+    if val and isinstance(val, basestring):
+        _dict[item] = re.sub('[ \n\t]+', ' ', val.strip())
+
+
 def proceed_int(_dict, item, remarks):
     val = _dict.get(item)
     if val == None:
@@ -69,7 +75,7 @@ def proceed_joint(_dict, item, remarks):
     _dict[item+'_seq']  = None
 
     if val:
-        res = re.match(u'([\w.-]+)-(\w+)-(\d+)', val, re.UNICODE)
+        res = re.match(u'([^-]+)-(.+)-(\d+)', val, re.UNICODE)
         if res:
             joint_pre, joint_line, joint_seq = res.groups()
             _dict[item+'_pre']  = joint_pre
@@ -78,6 +84,13 @@ def proceed_joint(_dict, item, remarks):
             return
 
         res = re.match(u'(\d+)-(\d+)', val)
+        if res:
+            joint_pre, joint_seq = res.groups()
+            _dict[item+'_pre']  = joint_pre
+            _dict[item+'_seq']  = joint_seq
+            return
+
+        res = re.match(u'(.+) *стык № *(\d+)', val)
         if res:
             joint_pre, joint_seq = res.groups()
             _dict[item+'_pre']  = joint_pre
@@ -99,7 +112,7 @@ def proceed_d_w_th(_dict, item, remarks):
             return
 
         if isinstance(val, basestring):
-            res = re.match(u'(\d+) *[XХxх*] *(\d+) *(?:/(?:Ду)?(\d+) *[XХxх*] *(\d+))?', val)   # 273x10/Ду80x4
+            res = re.match(u'(?:Ду)?(\d+) *[XХxх*] *(\d+) *(?:/(?:Ду)?(\d+) *[XХxх*] *(\d+))?', val)   # Ду273x10/Ду80x4
             if res:
                 d1, th1, d2, th2 = res.groups()
                 _dict['diameter1']  = d1
@@ -121,29 +134,30 @@ def proceed_d_w_th(_dict, item, remarks):
     remarks.append(val)
 
 
-def proceed_report_w_date(_dict, item, remarks):
-    _dict['report_pre'] = None
-    _dict['report_seq'] = None
-    _dict['date']       = None
-    _dict['date_str']   = None
+def proceed_doc_w_date(_dict, item, remarks):
+    _dict['doc_pre']  = None
+    _dict['doc_seq']  = None
+    _dict['doc_sign'] = None
+    _dict['date']     = None
+    _dict['date_str'] = None
 
     val = _dict.get(item)
     if val:
         res = re.match(u'(.*) от (.*)', val)
         if res:
-            report_str, date_str = res.groups()
+            doc_str, date_str = res.groups()
 
             date, date_str = get_date(date_str)
             _dict['date'] = date
             _dict['date_str'] = date_str
 
-            _dict['report'] = report_str
-            res = re.match(u'(?:(.*)/)?(.*)', report_str)
+            _dict['doc'] = doc_str
+            res = re.match(u'(?:(.*)/)?(.*)', doc_str)
             if res:
-                report_pre, report_seq = res.groups()
+                doc_pre, doc_seq = res.groups()
 
-                _dict['report_pre'] = report_pre
-                _dict['report_seq'] = report_seq
+                _dict['doc_pre'] = doc_pre
+                _dict['doc_seq'] = doc_seq
             return
 
     remarks.append(val)

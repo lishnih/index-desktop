@@ -206,7 +206,7 @@ ndt_register = {
             'y':                'proceed_int',
             'joint':            'proceed_joint',
             'd_w_th':           'proceed_d_w_th',
-            'report_w_date':    'proceed_report_w_date',
+            'report_w_date':    ('prepare_str', 'proceed_doc_w_date'),
         }
     },
 }
@@ -220,42 +220,47 @@ ndt_reports = {
 #   'sheets_filter':    None,
     'sheet_test':       [0, 0, u'{def: pgu235/(.+); rev: \w+}'],
 
+    u'СП_Астрахань_<Отдел>_<Документ>_001': {
+        'deprecated': True,
+    },
+
     u'СП_Астрахань_ОКК_Акт-ВИК-МК_001': {
         'doc':    {
             'doc_values': {
-                'doc_pre':        ( 9,  9),
-                'doc_seq':        ( 9, 11),
+                'doc_pre':          ( 9,  9),
+                'doc_seq':          ( 9, 11),
+                'date':             (12,  0),
+                'steel':            (26,  8),
             },
-            'doc_funcs': {},
+            'doc_funcs': {
+                'date':             'proceed_date',
+            },
             'doc_objects':        'Doc',
 #           'doc_objects1':       'Doc',
 
         },
-#         'table':    {
-#             'row_start':        4,
-#             'check_column':     'I',
-#             'row_objects':      'Joint_entry',
-#             'row_objects1':     ('Doc', 'Joint'),
-#             'col_names': [
-#                 'y',
-#                 'joint',
-#                 'welders',
-#                 'method',
-#                 'd_w_th',
-#                 'conditon',
-#                 'tools',
-#                 'defects',
-#                 'report_w_date',
-#                 'decision',
-#             ],
-#             'col_funcs': {
-#                 'y':                'proceed_int',
-#                 'joint':            'proceed_joint',
-#                 'd_w_th':           'proceed_d_w_th',
-#                 'report_w_date':    'proceed_report_w_date',
-#             }
-#         },
-    }
+        'table':    {
+            'row_start':        u'^размеров швов сварных соединений$',
+            'row_stop':         u'наименование узла',
+            'row_objects':      'Joint_entry',
+            'col_mode':         'value',
+            'col_names': [
+                'joints',
+            ],
+            'col_funcs': {
+                'joints':           'proceed_joints',
+            }
+        },
+    },
+
+    u'СП_Астрахань_ОКК_Заключение-УЗК-МК_001': {
+        'deprecated': True,
+    },
+
+    u'СП_Астрахань_ОКК_УЗК-арматура_001': {
+        'deprecated': True,
+    },
+
 }
 
 

@@ -2,7 +2,7 @@
 # coding=utf-8
 # Stan 2013-02-22
 
-import os, re, pickle
+import os, re, pickle, logging
 from PySide import QtCore
 
 from presets import *
@@ -19,20 +19,26 @@ def save_entry(filename, entry):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
+
     settings = QtCore.QSettings(company_section, app_section)
-    print(u"Settings: '{}' / '{}'".format(company_section, app_section))
+    logging.info(u"Settings: '{}' / '{}'".format(company_section, app_section))
 
     appdata = settings.value("appdata")
     if not appdata:
-        print(u"Запустите скрипт index, чтобы инициализировать директорию с данными")
+        logging.warning(u"Запустите скрипт index, чтобы инициализировать директорию с данными")
         return
 
-    print(u"Export to '{}'".format(appdata))
+    if not os.path.exists(appdata):
+        logging.info(u"Creating directory: {}".format(appdata))
+        os.makedirs(appdata)
+
+    logging.info(u"Export to '{}'".format(appdata))
 
     for key, value in globals().items():
         if isinstance(value, dict):
             description = value.get('description', '')
-            print(u"{:20}: {}".format(key, description))
+            logging.info(u"{:20}: {}".format(key, description))
             filename = os.path.join(appdata, "{}.pickle".format(key))
             save_entry(filename, value)
 

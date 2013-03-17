@@ -170,6 +170,9 @@ class MainFrame(QtGui.QMainWindow):
             text1 = tmpl.format(u"", obj_dump)
         self.ui.text1.setHtml(text1)
 
+        if th.isRunning():
+            return
+
         text2 = item.data(1, QtCore.Qt.UserRole)
         if text2 is not None:
             obj_name = html_val(text2)
@@ -309,7 +312,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def check_path(self, path):
         if not os.path.exists(path):
-            logging.info("Creating directory: {}".format(path))
+            logging.info(u"Creating directory: {}".format(path))
             os.makedirs(path)
 
         if os.path.isdir(path):

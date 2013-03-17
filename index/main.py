@@ -49,9 +49,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     from lib.argparse_funcs import try_to_decode
-    if 'task' in args:
+    if args.task:
         args.task = try_to_decode(args.task)
-    if 'method' in args:
+    if args.method:
         args.method = try_to_decode(args.method)
 
     sys.exit(main(args))

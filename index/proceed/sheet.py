@@ -6,7 +6,7 @@ import re
 import xlrd
 
 from reg import reg_object
-from reg.result import reg_warning
+from reg.result import reg_debug, reg_warning
 from models import Sheet
 from lib.sheet_funcs import get_str
 from lib.sheet_parse import parse_doc, parse_table
@@ -34,6 +34,9 @@ def proceed_sheet(sh, options, FILE, i=None):
             msg = u"В ({},{}) ожидается: '{}', найдено: '{}'".format(row, col, test_pattern, test_cell)
             reg_warning(SHEET, msg)
 
+        TASK = FILE._dir._source._task
+        reg_debug(TASK, test_cell)
+
     depth = options
     section = ["<options>"]
     for i in groups:
@@ -41,6 +44,10 @@ def proceed_sheet(sh, options, FILE, i=None):
             depth = depth.get(i)
             section.append(i)
     SHEET.section = section
+
+    deprecated_options = depth.get('deprecated')
+    if deprecated_options:
+        reg_warning(SHEET, 'deprecated')
 
     doc_options = depth.get('doc')
     if doc_options:

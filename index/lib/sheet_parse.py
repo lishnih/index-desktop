@@ -29,7 +29,7 @@ def parse_doc(sh, options, SHEET):
 
     TASK = SHEET._file._dir._source._task
     doc_dict = dict(_task=TASK)
-    test = ''
+    test = u""
 
     last_y, last_x = None, None
     for key, params in doc_values.items():
@@ -46,7 +46,7 @@ def parse_doc(sh, options, SHEET):
                     if val2:
                         val_list.append(val2)
                 doc_dict[key+'_list'] = val_list
-                test += u"{} [{},{}]: '{}' + '{!r}'\n".format(key, last_y, last_x, val, val_list)
+                test += u"{} [{},{}]: {} /{!r}/ + /{!r}/\n".format(key, last_y, last_x, val, val, val_list)
             else:
                 reg_warning(SHEET, u"Значение не найдено: '{}', пропускаем лист!".format(params))
                 return
@@ -58,7 +58,7 @@ def parse_doc(sh, options, SHEET):
                 y = last_y + int(y)
             val = get_value(sh, y, x)
             doc_dict[key] = val
-            test += u"{} [{},{}]: '{}'\n".format(key, y, x, val)
+            test += u"{} [{},{}]: {} /{!r}/\n".format(key, y, x, val, val)
         elif l == 3:
             y, x = params
             if isinstance(x, basestring):
@@ -67,7 +67,7 @@ def parse_doc(sh, options, SHEET):
                 y = last_y + int(y)
             val = get_value(sh, y, x)
             doc_dict[key] = val
-            test += u"{} [{},{},{}]: '{}'\n".format(key, y, x, pattern, val)
+            test += u"{} [{},{},{}]: {} /{!r}/\n".format(key, y, x, pattern, val, val)
 
     remarks = {}
     for item, funcs_name in doc_funcs.items():
@@ -77,18 +77,15 @@ def parse_doc(sh, options, SHEET):
             if remarks1:
                 remarks[func_name] = remarks1
     if remarks:
-        reg_warning(SHEET)
+        reg_warning(SHEET, remarks)
         SHEET.remarks = remarks
-
-    if test:
-        doc_dict['test'] = test
 
     if doc_dict:
         ROWS = []
         for doc_object in doc_objects:
-            ROWS.append(reg_object(doc_object, doc_dict, SHEET))
+            ROWS.append(reg_object(doc_object, doc_dict, SHEET, brief=test))
         for doc_object in doc_objects1:
-            ROWS.append(reg_object1(doc_object, doc_dict, SHEET))
+            ROWS.append(reg_object1(doc_object, doc_dict, SHEET, brief=test))
 
         link_objects(SHEET, *ROWS)
 
@@ -103,14 +100,15 @@ def parse_table_iter(sh, options, SHEET):
     row_start_skip = options.get('row_start_skip', 0)
     row_stop       = options.get('row_stop', sh.nrows)
     row_stop_skip  = options.get('row_stop_skip', 0)
+    col_mode       = options.get('col_mode', 'column')
     col_names      = options.get('col_names', [])
     col_funcs      = options.get('col_funcs', {})
 
     check_name = options.get('check_name')
     col_index1 = col_names.index(check_name) if check_name else None
 
-    check_column = options.get('check_column', 'A')
-    col_index2 = get_index(check_column)
+    check_column = options.get('check_column')
+    col_index2 = get_index(check_column) if check_column else None
 
     typical_index = col_index1 or col_index2
 
@@ -137,27 +135,39 @@ def parse_table_iter(sh, options, SHEET):
         SHEET.row_stop = row_stop
 
     for j in xrange(row_start, row_stop):
-        typical_column = get_value(sh, j, typical_index)
+        typical_column = get_value(sh, j, typical_index) if typical_index else True
         if typical_column:
             TASK = SHEET._file._dir._source._task
             row_dict = dict(_task=TASK, j=j)
-            test = ''
+            test = u"Номер строки: {}\n".format(j)
 
-            col = 0
-            for col_name in col_names:
-                if col_name:
-                    if isinstance(col_name, basestring):
-                        val = get_value(sh, j, col)
+            if col_mode == 'column':
+                i = 0
+                for col_name in col_names:
+                    if col_name:
+                        if isinstance(col_name, basestring):
+                            val = get_value(sh, j, i)
+                            row_dict[col_name] = val
+                            test += u"({}:{}) {}: {} /{!r}/\n".format(j, i, col_name, val, val)
+                        if isinstance(col_name, list):
+                            inner_row = 0
+                            for inner_col_name in col_name:
+                                if inner_col_name:
+                                    val = get_value(sh, j + inner_row, i)
+                                    row_dict[inner_col_name] = val
+                                inner_row += 1
+                    i += 1
+            elif col_mode == 'value':
+                col = 0
+                for i in xrange(sh.ncols):
+                    val = get_value(sh, j, i)
+                    if val:
+                        col_name = col_names[col]
                         row_dict[col_name] = val
-                        test += u"({}:{}) '{}': '{}'\n".format(j, col, col_name, val)
-                    if isinstance(col_name, list):
-                        inner_row = 0
-                        for inner_col_name in col_name:
-                            if inner_col_name:
-                                val = get_value(sh, j + inner_row, col)
-                                row_dict[inner_col_name] = val
-                            inner_row += 1
-                col += 1
+                        test += u"({}:{}) {}: {} /{!r}/\n".format(j, i, col_name, val, val)
+                        col += 1
+                        if col > len(col_names):
+                            break
 
             remarks = {}
             for item, funcs_name in col_funcs.items():
@@ -167,24 +177,25 @@ def parse_table_iter(sh, options, SHEET):
                     if remarks1:
                         remarks[func_name] = remarks1
             if remarks:
-                reg_warning(SHEET)
+                reg_warning(SHEET, remarks)
                 SHEET.remarks = remarks
-
-            if test:
-                row_dict['test'] = test
 
 #             test_row = ''
 #             for i in xrange(sh.ncols):
 #                 val = get_value(sh, j, i)
-#                 test_row += u"({}): '{}'\n".format(i, val)
+#                 test_row += u"({}): {} /{!r}/\n".format(i, val, val)
 #             row_dict['test_row'] = test_row
 
             if row_dict:
                 ROWS = []
                 for row_object in row_objects:
-                    ROWS.append(reg_object(row_object, row_dict, SHEET))
+                    obj = reg_object(row_object, row_dict, SHEET, brief=test)
+                    obj._row = row_dict
+                    ROWS.append(obj)
                 for row_object in row_objects1:
-                    ROWS.append(reg_object1(row_object, row_dict, SHEET))
+                    obj = reg_object1(row_object, row_dict, SHEET, brief=test)
+                    obj._row = row_dict
+                    ROWS.append(obj)
 
 #                 try:
 #                     DBSession.commit()

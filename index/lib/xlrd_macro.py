@@ -36,7 +36,7 @@ def contain_value(sh, row, col, seaching_value):
                 return None
 
         if isinstance(seaching_value, basestring):
-            result = re.match(seaching_value, val)
+            result = re.search(seaching_value, val)
             return result
         else:
             if val == seaching_value:
@@ -73,7 +73,7 @@ def search_hor_value(sh, formsearch):
         [x0, y0, pattern] = formsearch
         str = get_value(sh, y0, x0)
         try:
-            res = re.match(pattern, str, re.MULTILINE | re.DOTALL)
+            res = re.search(pattern, str, re.MULTILINE | re.DOTALL)
         except Exception as e:
             logging.error(u"""Ошибка при выборке данных!
 Проверьте ячейки, из которой извлекаются данные
@@ -96,7 +96,7 @@ str:     {!r}""".format(e, pattern, str))
             ind = 0                     # длина массива
             if not offset:              # если надо искать со start-ячейки
                 str = get_value(sh, y, x)
-                res = re.match(r"([^ ]+) {1,}(.+)", str, re.MULTILINE | re.DOTALL)
+                res = re.search(r"([^ ]+) {1,}(.+)", str, re.MULTILINE | re.DOTALL)
                 # !!! нужно, чтобы отбрасывалось start
                 if res:
                     reslist = res.groups()

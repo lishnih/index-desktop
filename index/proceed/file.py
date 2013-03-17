@@ -40,7 +40,7 @@ def proceed_file2(filename, options, DIR):
         sheets_filter = options.get('sheets_filter')
         sheets_list = filter_list(sheets, sheets_filter)
 
-        brief = "\n---\n".join(["\n".join(sheets), "\n".join(sheets_list)])
+        brief = [sheets, '---', sheets_list]
         FILE = reg_object(File, file_dict, DIR, brief=brief)
 
         nsheets = book.nsheets

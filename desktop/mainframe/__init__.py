@@ -208,7 +208,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def check_path(self, path):
         if not os.path.exists(path):
-            logging.info("Creating directory: {}".format(path))
+            logging.info(u"Creating directory: {}".format(path))
             os.makedirs(path)
 
         if os.path.isdir(path):
