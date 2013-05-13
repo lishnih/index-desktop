@@ -170,15 +170,19 @@ def parse_table_iter(sh, options, SHEET):
                             break
 
             remarks = {}
+            res = None
             for item, funcs_name in col_funcs.items():
                 for func_name in get_list(funcs_name):
                     remarks1 = []
-                    call(func_name, row_dict, item, remarks1, error_callback=e_func)
+                    res = call(func_name, row_dict, item, remarks1, error_callback=e_func)
+                    # item1, list1, func1
                     if remarks1:
                         remarks[func_name] = remarks1
             if remarks:
                 reg_warning(SHEET, remarks)
                 SHEET.remarks = remarks
+            if res:
+                SHEET.res = res
 
 #             test_row = ''
 #             for i in xrange(sh.ncols):

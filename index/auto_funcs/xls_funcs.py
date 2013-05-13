@@ -68,6 +68,12 @@ def proceed_date(_dict, item, remarks):
             remarks.append(val)
 
 
+def iter_joints(_dict, item, remarks):
+    val = _dict.get(item)
+    joint_list = val.split(';')
+    return 'joint', joint_list, 'proceed_joint'
+
+
 def proceed_joint(_dict, item, remarks):
     val = _dict.get(item)
     _dict[item+'_pre']  = None
@@ -112,13 +118,13 @@ def proceed_d_w_th(_dict, item, remarks):
             return
 
         if isinstance(val, basestring):
-            res = re.match(u'(?:Ду)?(\d+) *[XХxх*] *(\d+) *(?:/(?:Ду)?(\d+) *[XХxх*] *(\d+))?', val)   # Ду273x10/Ду80x4
+            res = re.match(u'(?:Ду)?(\d+)[×XХxх ]*(\d*) *(?:/(?:Ду)?(\d+)[×XХxх ]*(\d*))?', val)
             if res:
                 d1, th1, d2, th2 = res.groups()
-                _dict['diameter1']  = d1
-                _dict['thickness1'] = th1
-                _dict['diameter2']  = d2
-                _dict['thickness2'] = th2
+                if d1:  _dict['diameter1']  = d1
+                if th1: _dict['thickness1'] = th1
+                if d2:  _dict['diameter2']  = d2
+                if th2: _dict['thickness2'] = th2
                 return
 
             res = re.match(u'(\d+\.?\d*)', val)

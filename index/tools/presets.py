@@ -235,9 +235,8 @@ ndt_reports = {
             'doc_funcs': {
                 'date':             'proceed_date',
             },
-            'doc_objects':        'Doc',
-#           'doc_objects1':       'Doc',
-
+            'doc_objects':      'Doc',
+#           'doc_objects1':     'Doc',
         },
         'table':    {
             'row_start':        u'^размеров швов сварных соединений$',
@@ -248,7 +247,7 @@ ndt_reports = {
                 'joints',
             ],
             'col_funcs': {
-                'joints':           'proceed_joints',
+                'joints':           'iter_joints',
             }
         },
     },
