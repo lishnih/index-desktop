@@ -8,7 +8,7 @@ py_version = sys.version_info[:2]
 PY3 = py_version[0] == 3
 
 if PY3:
-    if py_version < (3, 2):
+    if py_version < (3, 3):
         raise RuntimeError('On Python 3, Index requires Python 3.2 or better')
 else:
     if py_version < (2, 6):
@@ -25,25 +25,27 @@ install_requires=[
     'setuptools',
      ]
 
-setup(
-    name='index',
-    version='0.1',
-    url='http://github.com/lishnih/index',
-    license='MIT',
-    author='Stan',
-    author_email='lishnih@gmail.com',
-    description=('Document Index'),
-    long_description=__doc__,
-    packages=find_packages(),
-    include_package_data=True,
-    zip_safe=False,
-    install_requires = install_requires,
-    platforms='any',
-    keywords='PySide indexing reports documents',
-    classifiers=[
-        'Environment :: Web Environment',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-    ],
-)
+
+if __name__ == '__main__':
+    setup(
+        name='index',
+        version='0.2',
+        url='http://github.com/lishnih/index',
+        license='MIT',
+        author='Stan',
+        author_email='lishnih@gmail.com',
+        description=('Document Index'),
+        long_description=__doc__,
+        packages=find_packages(),
+        include_package_data=True,
+        zip_safe=False,
+        install_requires = install_requires,
+        platforms='any',
+        keywords='PySide indexing reports documents',
+        classifiers=[
+            'Environment :: Web Environment',
+            'Operating System :: OS Independent',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2.7',
+        ],
+    )
