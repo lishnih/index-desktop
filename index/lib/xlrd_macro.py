@@ -114,7 +114,7 @@ str:     {!r}""".format(e, pattern, str))
                     for x in range(x, sh.ncols):
                         if ind >= max:
                             break
-    
+
                         str = get_value(sh, y, x)
                         if str:
                             if stop:

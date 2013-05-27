@@ -16,7 +16,7 @@ def view_db(tree_widget):
         for table in metadata.tables:
             tdata = metadata.tables.get(table)
             table_item = DirItem(tree_widget, table, summary=tdata)
-            
+
             for column in tdata.c:
                 if column.primary_key:
                     column_item = DisabledItem(table_item, column.name, summary=column)

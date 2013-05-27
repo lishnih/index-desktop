@@ -28,7 +28,7 @@ class Sources(QtGui.QDialog):
         for i in TASK.sources:
             self.ui.listWidget.addItem(i.name)
 
- 
+
 # События
 
 

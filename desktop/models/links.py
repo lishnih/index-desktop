@@ -43,7 +43,7 @@ def link_objects(*args):
                     foreign_key = foreign_keys_c[model][primary_tablename]
                     setattr(obj, foreign_key, pobj)
         im += 1
-       
+
 
 
 if __name__ == '__main__':

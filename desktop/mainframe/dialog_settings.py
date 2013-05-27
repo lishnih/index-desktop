@@ -76,8 +76,8 @@ class Settings(QtGui.QDialog):
 
             formLayout.addRow(line)
             i += 2
- 
- 
+
+
 # События
 
 
@@ -113,7 +113,7 @@ class Settings(QtGui.QDialog):
         indexscript = self.get_indexscript()
         if indexscript:
             args = [sys.executable, 'main.py']
-    
+
             TASK = self.taskData.get('_ROW')
             name = TASK.name
             if name:
@@ -121,11 +121,11 @@ class Settings(QtGui.QDialog):
             method = TASK.method
             if method:
                 args.extend(['--method', method])
-    
+
             sources = [i.name for i in TASK.sources]
             if sources:
                 args.extend(sources)
-    
+
             p = multiprocessing.Process(target=worker, args=(args, indexscript))
             p.start()
 

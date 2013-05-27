@@ -44,6 +44,12 @@ if __name__ == '__main__':
     parser.add_argument('--setindexscript', action=readable_dir,
                         help='set directory of index script', metavar='INDEXSCRIPT')
 
-    args = parser.parse_args()
+    if sys.version_info >= (3,):
+        argv = sys.argv
+    else:
+        fse = sys.getfilesystemencoding()
+        argv = [i.decode(fse) for i in sys.argv]
+
+    args = parser.parse_args(argv[1:])
 
     sys.exit(main(args))

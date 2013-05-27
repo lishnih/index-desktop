@@ -46,12 +46,12 @@ if __name__ == '__main__':
     parser.add_argument('--setdatadir', action=readable_dir, nargs='?', const='/',
                         help='set data directory', metavar='DATADIR')
 
-    args = parser.parse_args()
+    if sys.version_info >= (3,):
+        argv = sys.argv
+    else:
+        fse = sys.getfilesystemencoding()
+        argv = [i.decode(fse) for i in sys.argv]
 
-    from lib.argparse_funcs import try_to_decode
-    if args.task:
-        args.task = try_to_decode(args.task)
-    if args.method:
-        args.method = try_to_decode(args.method)
+    args = parser.parse_args(argv[1:])
 
     sys.exit(main(args))

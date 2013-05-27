@@ -88,7 +88,7 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
         # Dir
         dirname = os.path.dirname(filename)
         DIR = proceed_dir(dirname, options, SOURCE)
- 
+
         # File
         proceed_file(filename, options, DIR)
 
@@ -106,7 +106,7 @@ def main(args=None):
 #         enabled, taskname1, options1 = get_preset(source)
 #         taskname = taskname or taskname1
 #         options  = options  or options1
-# 
+#
 #     for source, enabled, taskname, options in get_presets():
 #         if enabled:
 #             Proceed(source, taskname, options)
@@ -125,6 +125,12 @@ if __name__ == '__main__':
     parser.add_argument('files', action=readable_file_or_dir_list, nargs='*',
                         help='files and directories to proceed')
 
-    args = parser.parse_args()
+    if sys.version_info >= (3,):
+        argv = sys.argv
+    else:
+        fse = sys.getfilesystemencoding()
+        argv = [i.decode(fse) for i in sys.argv]
+
+    args = parser.parse_args(argv[1:])
 
     sys.exit(main(args))
