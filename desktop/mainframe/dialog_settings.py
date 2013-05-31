@@ -9,8 +9,7 @@ from PySide import QtCore, QtGui
 # from dialog_settings_test_ui import Ui_Dialog
 from dialog_sources import Sources
 
-from models import DBSession
-from task_item import redraw_task, mark_task_deleted, update_column
+from task_item import redraw_task, mark_task_deleted
 
 
 def worker(*args):
@@ -50,7 +49,6 @@ class Settings(QtGui.QDialog):
         formLayout = self.ui.formLayout
 
         i = 0
-#       for key, value in taskData.items():
         for key in sorted(taskData.keys()):
             value = taskData.get(key)
             tt = str(type(value)).replace('<', '&lt;').replace('>', '&gt;')
@@ -87,7 +85,7 @@ class Settings(QtGui.QDialog):
                 le = self.findChild(QtGui.QLineEdit, "le_{}".format(key))
                 le_value = le.text()
                 if self.is_changed(self.taskData.get(key), le_value):
-                    update_column(self.taskData, key, le_value)
+                    self.taskData[key] = le_value
 
         redraw_task(self.taskData)
 
@@ -110,29 +108,33 @@ class Settings(QtGui.QDialog):
 
 
     def OnProceed(self):
-        indexscript = self.get_indexscript()
+        indexscript = self.settings.value("indexscript")
         if indexscript:
             args = [sys.executable, 'main.py']
 
-            TASK = self.taskData.get('_ROW')
-            name = TASK.name
+            name = self.taskData.get('name')
             if name:
                 args.extend(['--task', name])
-            method = TASK.method
+
+            method = self.taskData.get('method')
             if method:
                 args.extend(['--method', method])
 
-            sources = [i.name for i in TASK.sources]
+            sources = [i for i in self.taskData.get('sources', [])]
             if sources:
                 args.extend(sources)
 
             p = multiprocessing.Process(target=worker, args=(args, indexscript))
             p.start()
+        else:
+            QtGui.QMessageBox.warning(None, "Warning",
+                u"""Скрипт index не задан!
+Задать директорию скрипта можно с помощью команды:"
+main.py --setindexscript DIR""")
 
 
     def OnDelete(self):
-        TASK = self.taskData.get('_ROW')
-        DBSession.delete(TASK)
+        # !!!
         mark_task_deleted(self.taskData)
 
 
@@ -171,17 +173,6 @@ class Settings(QtGui.QDialog):
 
         if value1 != value2:
             return True
-
-
-    def get_indexscript(self):
-        indexscript = self.settings.value("indexscript")
-        if not indexscript:
-            QtGui.QMessageBox.warning(None, "Warning",
-                u"""Скрипт index не задан!
-Задать директорию скрипта можно с помощью команды:"
-main.py --setindexscript DIR""")
-
-        return indexscript
 
 
 

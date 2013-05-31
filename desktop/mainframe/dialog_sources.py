@@ -24,9 +24,8 @@ class Sources(QtGui.QDialog):
         self.loadDialogSettings()
 
         # Добавляем виджеты
-        TASK = taskData.get('_ROW')
-        for i in TASK.sources:
-            self.ui.listWidget.addItem(i.name)
+        for filename in taskData['sources']:
+            self.ui.listWidget.addItem(filename)
 
 
 # События

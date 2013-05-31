@@ -7,7 +7,7 @@ from PySide import QtCore, QtGui
 
 import dragwidget_rc
 from dialog_settings import Settings
-from task_item import init_task_item_from_dnd, draw_task
+from task_item import init_task, draw_task
 
 
 class DragWidget(QtGui.QFrame):
@@ -58,7 +58,8 @@ class DragWidget(QtGui.QFrame):
         urls = event.mimeData().urls()
         if urls:
             sources = [i.path() for i in urls]
-            init_task_item_from_dnd(self, sources, event.pos())
+            task = init_task(self, sources, event.pos())
+            draw_task(self, task)
 
             event.accept()
         else:

@@ -35,10 +35,6 @@ if __name__ == '__main__':
     from lib.argparse_funcs import readable_dir
 
     parser = argparse.ArgumentParser(description='Tools for creating tasks.')
-    parser.add_argument('--datadir', action='store_true',
-                        help='get data directory')
-    parser.add_argument('--setdatadir', action=readable_dir, nargs='?', const='/',
-                        help='set data directory', metavar='DATADIR')
     parser.add_argument('--indexscript', action='store_true',
                         help='get directory of index script')
     parser.add_argument('--setindexscript', action=readable_dir,

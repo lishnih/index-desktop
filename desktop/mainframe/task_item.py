@@ -8,120 +8,16 @@ from sqlalchemy import types
 
 import dragwidget_rc
 
-from models import Task, Source
-from reg import reg_object, reg_object1
 
-
-# class TaskItem(object):
-#     def __init__(self, parent=None):
-#         super(DragWidget, self).__init__(parent)
-#         self.parent = parent
-
-
-# Инициализует все переменные таблицы Task
-def init_from_schema(Schema):
-    task = dict()
-    for Column in Schema.c:
-        i = Column.key
-        if i != 'id':
-            t = type(Column.type)
-            if t == types.Integer:
-                value = 0
-            else:
-                value = ''
-            task[i] = value
-    return task
-
-
-def init_task_item_from_db(parent, TASK):
-    task_schema = Task.__table__
-    task = init_from_schema(task_schema)
-
-    task['_ROW'] = TASK
-
-    for Column in task_schema.c:
-        i = Column.key
-        if i != 'id':
-            value = getattr(TASK, i)
-            if value:
-                task[i] = value
-
-    try:
-        task['pos'] = TASK.pos_x, TASK.pos_y
-    except:
-        task['pos'] = 0, 0
-
-    draw_task(parent, task)
-
-#   return task
-
-
-def init_task_item_from_dnd(parent, sources=None, pos=None):
-    task_schema = Task.__table__
-    task = init_from_schema(task_schema)
-
+def init_task(parent, sources=None, pos=None):
     count = len(sources)
     name = os.path.basename(sources[0]) if sources else u"Новая задача"
     if count > 1:
-        name = u"{} и др.".format(name)
+        name = u"{0} [{1}]".format(name, count)
 
-#     task = dict(name=name, pos=pos, count=count, offset='*half*')
-    task['name']   = name
-    task['img']    = ":/images/file.png"
-    task['pos']    = pos
-    task['count']  = count
-    task['offset'] = '*half*'
-    taskIcon = draw_task(parent, task)
-
-    task = taskIcon.taskData    # без этого не работает
-    pos = task.get('pos')
-    if pos:
-        task['pos_x'], task['pos_y'] = pos
-
-    TASK = reg_object(Task, task)
-
-    task['_ROW'] = TASK
-    task['icon'] = taskIcon
-
-    append_source(TASK, sources)
-
+    task = dict(name=name, img=":/images/file.png", pos=pos, offset='*half*',
+                sources=sources)
     return task
-
-
-def update_row(task):
-    TASK = task.get('_ROW')
-    if not TASK:
-        print("Error in task: {!r}".format(task))
-
-    pos = task.get('pos')
-    if pos:
-        TASK.pos_x, TASK.pos_y = pos
-
-    TASK.name = task.get('name')
-
-
-def update_column(task, key, value):
-    print(key, task.get(key), value)
-    task[key] = value
-
-#   task_schema = Task.__table__
-    TASK = task.get('_ROW')
-    try:
-        setattr(TASK, key, value)
-    except Exception as e:
-        print(u"Не удалось обновить запись".format(e))
-
-
-def append_source(TASK, sources):
-    if sources:
-        for filename in sources:
-            if os.name == 'nt': # !!! Через командную строку без этого не распознаётся
-                filename = filename[1:]
-            source = dict(
-                _task = TASK,
-                name = filename,
-            )
-            SOURCE = reg_object(Source, source)
 
 
 def draw_task(parent, task):
@@ -162,8 +58,6 @@ def draw_task(parent, task):
     return taskIcon
 
 
-# Для отображения значка задачи нам необходимы следующие данные:
-# name, img, pos, offset
 def redraw_task(taskData):
     taskIcon = taskData.get('icon')
     img = taskData.get('img', '')
