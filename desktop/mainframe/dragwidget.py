@@ -11,80 +11,104 @@ from task_item import init_task, draw_task
 
 
 class DragWidget(QtGui.QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, settings=None, s=None):
         super(DragWidget, self).__init__(parent)
         self.parent = parent
-        self.settings = self.window().settings
+        self.settings = settings
+        self.s = s
 
         self.setMinimumSize(320, 240)
         self.setFrameStyle(QtGui.QFrame.StyledPanel)
         self.setAcceptDrops(True)
 
-        # Текущий перетаскиваемый объект
-        self.taskData = None
+        # Выпадающее меню
+        self.actionDelete = QtGui.QAction(self)
+        QtCore.QObject.connect(self.actionDelete, QtCore.SIGNAL("triggered()"), self.deleteEvent)
+        self.actionDelete.setText(QtGui.QApplication.translate("DragWidget", "Delete", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.menuTask = QtGui.QMenu()
+        self.menuTask.addAction(self.actionDelete)
+
+        # Текущий (перетаскиваемый) объект
+        self.selected = None
 
 
 # События
 
 
-    # Событие, возникающее при перенесении объекта над другим объектом
+    # Событие, возникающее при захватывании объекта
     def dragEnterEvent(self, event):
-        if event.source() == self:
-            event.setDropAction(QtCore.Qt.MoveAction)
-            event.accept()
+        source = event.source()
+
+        if source == self:
+            child = self.childAt(event.pos())
+            if not child or child == self.selected:
+                event.setDropAction(QtCore.Qt.MoveAction)
+                event.accept()
+            else:
+                event.ignore()
             return
 
-        urls = event.mimeData().urls()
-        if urls:
-            event.acceptProposedAction()
-        else:
-            event.ignore()
+        if source == None:
+            urls = event.mimeData().urls()
+            if urls:
+                event.acceptProposedAction()
+            else:
+                event.ignore()
+            return
 
 
+    # Событие, возникающее при передвижении объекта
 #   dragMoveEvent = dragEnterEvent
 
 
     # Событие, возникающее при отпускании объекта
     def dropEvent(self, event):
-        if event.source() == self:
-            self.taskData['pos'] = event.pos()
-            draw_task(self, self.taskData)
-            self.taskData = None
+        source = event.source()
+
+        if source == self:
+            self.selected.taskData['pos'] = event.pos()
+            draw_task(self, self.selected.taskData)
+            self.selected = None
 
             event.setDropAction(QtCore.Qt.MoveAction)
             event.accept()
             return
 
-        urls = event.mimeData().urls()
-        if urls:
-            sources = [i.path() for i in urls]
-            task = init_task(self, sources, event.pos())
-            draw_task(self, task)
-
-            event.accept()
-        else:
-            event.ignore()
+        if source == None:
+            urls = event.mimeData().urls()
+            if urls:
+                sources = [i.path() for i in urls]
+                task = init_task(self, sources, event.pos())
+                draw_task(self, task)
+    
+                event.accept()
+            else:
+                event.ignore()
+            return
 
 
     def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.mousePressEvent_Left(event)
+        elif event.button() == QtCore.Qt.MouseButton.RightButton:
+            self.mousePressEvent_Right(event)
+
+
+    def mousePressEvent_Left(self, event):
         child = self.childAt(event.pos())
         if not child:
             return
 
-        offset = event.pos() - child.pos()
-        child.taskData['offset'] = offset
+        self.selected = child
+
+        offset = event.pos() - self.selected.pos()
+        self.selected.taskData['offset'] = offset
 
         mimeData = QtCore.QMimeData()
 
-        # Сохраняем данные активной задачи
-        self.taskData = child.taskData
-#         taskData = QtCore.QByteArray()
-#         dataStream = QtCore.QDataStream(taskData, QtCore.QIODevice.WriteOnly)
-#         dataStream << child.taskData
-#         mimeData.setData('application/x-taskdata', taskData)
-
         # Извлекаем отображение иконки
-        pixmap = QtGui.QPixmap(self.taskData.get('img'))
+        pixmap = QtGui.QPixmap(self.selected.taskData.get('img'))
 
         # Создаём QDrag
         drag = QtGui.QDrag(self)
@@ -99,25 +123,51 @@ class DragWidget(QtGui.QFrame):
         painter.fillRect(pixmap.rect(), QtGui.QColor(127, 127, 127, 127))
         painter.end()
 
-        child.setPixmap(tempPixmap)
+        self.selected.setPixmap(tempPixmap)
 
-        if drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.CopyAction) == QtCore.Qt.MoveAction:
-            child.close()
+        res = drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.MoveAction)
+#       print res
+        if res == QtCore.Qt.MoveAction:
+            self.selected.close()
         else:
-            child.show()
-            child.setPixmap(pixmap)
+            self.selected.show()
+            self.selected.setPixmap(pixmap)
 
 
-    def mouseDoubleClickEvent(self, event):
+    def mousePressEvent_Right(self, event):
         child = self.childAt(event.pos())
         if not child:
             return
 
-        offset = event.pos() - child.pos()
-        child.taskData['offset'] = offset
+        self.selected = child
 
-        dialog = Settings(self.parent, child.taskData, self.settings)
+        pos = self.mapToGlobal(event.pos())
+        self.menuTask.popup(pos)
+
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.mouseDoubleClickEvent_Left(event)
+
+
+    def mouseDoubleClickEvent_Left(self, event):
+        child = self.childAt(event.pos())
+        if not child:
+            return
+
+        self.selected = child
+
+        offset = event.pos() - self.selected.pos()
+        self.selected.taskData['offset'] = offset
+
+        dialog = Settings(self.parent, self.selected.taskData, self.settings)
         res = dialog.exec_()
+
+
+    def deleteEvent(self):
+        print self.selected
+        self.selected.close()
+        self.selected = None
 
 
 # Сервисные функции
@@ -125,7 +175,8 @@ class DragWidget(QtGui.QFrame):
 
     def tasks_list(self):
         for child in self.children():
-            yield child.taskData
+            if hasattr(child, 'taskData'):
+                yield child.taskData
 
 
 

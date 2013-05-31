@@ -38,7 +38,7 @@ class MainFrame(QtGui.QMainWindow):
         # Добавляем свой виджет
         verticalLayout = QtGui.QVBoxLayout(self.ui.widget)
         verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.ui.gragWidget = DragWidget(self.ui.widget)
+        self.ui.gragWidget = DragWidget(self.ui.widget, self.settings, self.s)
         self.ui.gragWidget.setObjectName("gragWidget")
         verticalLayout.addWidget(self.ui.gragWidget)
 
