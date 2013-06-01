@@ -9,7 +9,7 @@ from PySide import QtCore, QtGui
 # from dialog_settings_test_ui import Ui_Dialog
 from dialog_sources import Sources
 
-from task_item import redraw_task, mark_task_deleted
+from task_item import redraw
 
 
 def worker(*args):
@@ -31,10 +31,10 @@ def worker(*args):
 
 
 class Settings(QtGui.QDialog):
-    def __init__(self, parent, taskData, settings=None):
+    def __init__(self, parent, child, settings=None, s=None):
         super(Settings, self).__init__(parent)
         self.parent = parent
-        self.taskData = taskData
+        self.child = child
         self.settings = settings
 
         # Загружаем элементы диалога
@@ -49,8 +49,8 @@ class Settings(QtGui.QDialog):
         formLayout = self.ui.formLayout
 
         i = 0
-        for key in sorted(taskData.keys()):
-            value = taskData.get(key)
+        for key in sorted(self.child.taskData.keys()):
+            value = self.child.taskData.get(key)
             tt = str(type(value)).replace('<', '&lt;').replace('>', '&gt;')
             text = u'{}<br/><span style="color:#aaaaaa;">{}</span>'.format(key, tt)
             label = QtGui.QLabel(text, Dialog)
@@ -80,30 +80,38 @@ class Settings(QtGui.QDialog):
 
 
     def accept(self):
-        for key, value in self.taskData.items():
-            if self.may_change(value):
-                le = self.findChild(QtGui.QLineEdit, "le_{}".format(key))
-                le_value = le.text()
-                if self.is_changed(self.taskData.get(key), le_value):
-                    self.taskData[key] = le_value
-
-        redraw_task(self.taskData)
+        if self.child.isHidden():
+            self.child.close()
+        else:
+            for key, value in self.child.taskData.items():
+                if self.may_change(value):
+                    le = self.findChild(QtGui.QLineEdit, "le_{}".format(key))
+                    le_value = le.text()
+                    if self.is_changed(self.child.taskData.get(key), le_value):
+                        self.child.taskData[key] = le_value
+    
+            redraw(self.child)
 
         self.saveDialogSettings()
         self.done(True)
 
 
     def reject(self):
+        if self.child.isHidden():
+            self.child.show()
+
+        redraw(self.child)
+
         self.saveDialogSettings()
         self.done(False)
 
 
     def closeEvent(self, event):
-        self.saveDialogSettings()
+        self.reject()
 
 
     def OnViewSources(self):
-        dialog = Sources(self.parent, self.taskData, self.window().settings)
+        dialog = Sources(self.parent, self.child.taskData, self.window().settings)
         res = dialog.exec_()
 
 
@@ -112,15 +120,15 @@ class Settings(QtGui.QDialog):
         if indexscript:
             args = [sys.executable, 'main.py']
 
-            name = self.taskData.get('name')
+            name = self.child.taskData.get('name')
             if name:
                 args.extend(['--task', name])
 
-            method = self.taskData.get('method')
+            method = self.child.taskData.get('method')
             if method:
                 args.extend(['--method', method])
 
-            sources = [i for i in self.taskData.get('sources', [])]
+            sources = [i for i in self.child.taskData.get('sources', [])]
             if sources:
                 args.extend(sources)
 
@@ -134,8 +142,7 @@ main.py --setindexscript DIR""")
 
 
     def OnDelete(self):
-        # !!!
-        mark_task_deleted(self.taskData)
+        self.child.hide()
 
 
 # Сервисные функции

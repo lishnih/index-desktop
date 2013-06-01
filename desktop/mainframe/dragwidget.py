@@ -7,7 +7,7 @@ from PySide import QtCore, QtGui
 
 import dragwidget_rc
 from dialog_settings import Settings
-from task_item import init_task, draw_task
+from task_item import init_task, draw_task, redraw, highlight
 
 
 class DragWidget(QtGui.QFrame):
@@ -22,14 +22,19 @@ class DragWidget(QtGui.QFrame):
         self.setAcceptDrops(True)
 
         # Выпадающее меню
+        self.actionDebug = QtGui.QAction(self)
+        QtCore.QObject.connect(self.actionDebug, QtCore.SIGNAL("triggered()"), self.debugEvent)
+        self.actionDebug.setText(QtGui.QApplication.translate("DragWidget", "Debug", None, QtGui.QApplication.UnicodeUTF8))
+
         self.actionDelete = QtGui.QAction(self)
         QtCore.QObject.connect(self.actionDelete, QtCore.SIGNAL("triggered()"), self.deleteEvent)
         self.actionDelete.setText(QtGui.QApplication.translate("DragWidget", "Delete", None, QtGui.QApplication.UnicodeUTF8))
 
         self.menuTask = QtGui.QMenu()
+        self.menuTask.addAction(self.actionDebug)
         self.menuTask.addAction(self.actionDelete)
 
-        # Текущий (перетаскиваемый) объект
+        # Выбранный объект
         self.selected = None
 
 
@@ -65,11 +70,20 @@ class DragWidget(QtGui.QFrame):
     # Событие, возникающее при отпускании объекта
     def dropEvent(self, event):
         source = event.source()
+        pos = event.pos()
 
         if source == self:
-            self.selected.taskData['pos'] = event.pos()
-            draw_task(self, self.selected.taskData)
-            self.selected = None
+            offset = None
+            if event.mimeData().hasFormat('application/x-dnditemdata'):
+                itemData = event.mimeData().data('application/x-dnditemdata')
+                dataStream = QtCore.QDataStream(itemData, QtCore.QIODevice.ReadOnly)
+    
+                pixmap = QtGui.QPixmap()
+                offset = QtCore.QPoint()
+                dataStream >> offset
+
+            self.selected.taskData['pos'] = pos
+            draw_task(self, self.selected.taskData, offset=offset)
 
             event.setDropAction(QtCore.Qt.MoveAction)
             event.accept()
@@ -79,8 +93,15 @@ class DragWidget(QtGui.QFrame):
             urls = event.mimeData().urls()
             if urls:
                 sources = [i.path() for i in urls]
-                task = init_task(self, sources, event.pos())
-                draw_task(self, task)
+
+                child = self.childAt(pos)
+                if child:
+                    child_sources = child.taskData.get('sources', [])
+                    child_sources.update(sources)
+                    redraw(child)
+                else:
+                    task = init_task(self, sources, pos)
+                    draw_task(self, task, middle=1)
     
                 event.accept()
             else:
@@ -102,36 +123,39 @@ class DragWidget(QtGui.QFrame):
 
         self.selected = child
 
-        offset = event.pos() - self.selected.pos()
-        self.selected.taskData['offset'] = offset
+        # Извлекаем отображение иконки
+#       pixmap = QtGui.QPixmap(child.pixmap())
+        pixmap = QtGui.QPixmap(child.taskData.get('img'))
+
+        offset = event.pos() - child.pos()
+
+        itemData = QtCore.QByteArray()
+        dataStream = QtCore.QDataStream(itemData, QtCore.QIODevice.WriteOnly)
+        dataStream << QtCore.QPoint(offset)
 
         mimeData = QtCore.QMimeData()
-
-        # Извлекаем отображение иконки
-        pixmap = QtGui.QPixmap(self.selected.taskData.get('img'))
+        mimeData.setData('application/x-dnditemdata', itemData)
 
         # Создаём QDrag
+        rect = child.rect()
+        w, h = rect.width(), rect.height()
+        pixmap = QtGui.QPixmap(w, h)
+        pixmap.fill(QtGui.QColor(255, 255, 255, 127))
+
         drag = QtGui.QDrag(self)
         drag.setMimeData(mimeData)
         drag.setPixmap(pixmap)
         drag.setHotSpot(offset)
 
-        # Затемняем иконку
-        tempPixmap = QtGui.QPixmap(pixmap)
-        painter = QtGui.QPainter()
-        painter.begin(tempPixmap)
-        painter.fillRect(pixmap.rect(), QtGui.QColor(127, 127, 127, 127))
-        painter.end()
-
-        self.selected.setPixmap(tempPixmap)
+        # Выделяем иконку
+        highlight(child)
 
         res = drag.exec_(QtCore.Qt.CopyAction | QtCore.Qt.MoveAction, QtCore.Qt.MoveAction)
 #       print res
         if res == QtCore.Qt.MoveAction:
-            self.selected.close()
+            child.close()
         else:
-            self.selected.show()
-            self.selected.setPixmap(pixmap)
+            redraw(child)
 
 
     def mousePressEvent_Right(self, event):
@@ -155,19 +179,21 @@ class DragWidget(QtGui.QFrame):
         if not child:
             return
 
-        self.selected = child
+        # Выделяем иконку
+        highlight(child)
 
-        offset = event.pos() - self.selected.pos()
-        self.selected.taskData['offset'] = offset
-
-        dialog = Settings(self.parent, self.selected.taskData, self.settings)
+        dialog = Settings(self.parent, child, self.settings, self.s)
         res = dialog.exec_()
 
 
+    def debugEvent(self):
+        for i in self.tasks_list():
+            print i
+            print
+
+
     def deleteEvent(self):
-        print self.selected
         self.selected.close()
-        self.selected = None
 
 
 # Сервисные функции

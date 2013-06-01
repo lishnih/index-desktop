@@ -9,75 +9,70 @@ from sqlalchemy import types
 import dragwidget_rc
 
 
-def init_task(parent, sources=None, pos=None):
-    count = len(sources)
+def init_task(parent, sources=[], pos=None):
     name = os.path.basename(sources[0]) if sources else u"Новая задача"
+    count = len(sources)
     if count > 1:
-        name = u"{0} [{1}]".format(name, count)
+        name = name + "+"
 
-    task = dict(name=name, img=":/images/file.png", pos=pos, offset='*half*',
-                sources=sources)
+    sources = set(sources)
+    task = dict(name=name, pos=pos, img=":/images/file.png", sources=sources)
     return task
 
 
-def draw_task(parent, task):
-    name   = task.get('name', u"/Без имени/")
-    img    = task.get('img', ":/images/file.png")
-    pos    = task.get('pos')
-    offset = task.get('offset')
+def draw_task(parent, task, offset=None, middle=None):
+    taskIcon = QtGui.QLabel(parent)
+    pos = task.get('pos')
+    img = task.get('img', u":/images/file.png")
 
     if isinstance(pos, QtCore.QPoint):
         pos = pos.toTuple()
     if isinstance(offset, QtCore.QPoint):
         offset = offset.toTuple()
 
-    taskIcon = QtGui.QLabel(parent)
-
-    if pos:
-        if offset == '*half*':
-            rect = QtGui.QPixmap(img).rect()
-            offset = (rect.width() // 2, rect.height() // 2)
-        if offset:
-            pos = correct_pos(pos, offset)
-        taskIcon.move(*pos)
-        task['pos'] = pos
-
-    # Данные задачи
-    task['name'] = name
-    task['img'] = img
-    task['pos'] = pos
-    task['offset'] = offset
     taskIcon.taskData = task
     taskIcon.taskData['icon'] = taskIcon
 
-    redraw_task(taskIcon.taskData)
-
+    redraw(taskIcon)
     taskIcon.show()
-    taskIcon.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
+    if pos:
+        if middle:
+            rect = taskIcon.rect()
+            offset = (rect.width() // 2, rect.height() // 2)
+        if offset:
+            pos = correct_pos(pos, offset)
+            task['pos'] = pos
+        taskIcon.move(*pos)
+
+    taskIcon.setAttribute(QtCore.Qt.WA_DeleteOnClose)
     return taskIcon
 
 
-def redraw_task(taskData):
+def redraw(child):
+    taskData = child.taskData
+    name = taskData.get('name', u"/Без имени/")
+    img  = taskData.get('img',  u":/images/file.png")
     taskIcon = taskData.get('icon')
-    img = taskData.get('img', '')
-    name = taskData.get('name', '')
 
-#   taskIcon.setPixmap(QtGui.QPixmap(img))
-    taskIcon.setText(u'<p align="center"><img src="{}"/><br/>{}</p>'.format(img, name))
+    sources = taskData.get('sources', [])
+    count = len(sources)
+
+    taskIcon.setText(u'<p align="center"><img src="{}"/><br/>{}<br/>Всего {} элем.</p>'.format(img, name, count))
 
 
-def mark_task_deleted(taskData):
+def highlight(child):
+    rect = child.rect()
+    w, h = rect.width(), rect.height()
+    pixmap = QtGui.QPixmap(w, h)
+    pixmap.fill(QtGui.QColor(127, 127, 127, 63))
+
+    taskData = child.taskData
     taskIcon = taskData.get('icon')
-    pixmap = QtGui.QPixmap(taskData.get('img'))
-    painter = QtGui.QPainter()
-    painter.begin(pixmap)
-    painter.fillRect(pixmap.rect(), QtGui.QColor(127, 127, 127, 127))
-    painter.end()
     taskIcon.setPixmap(pixmap)
 
 
-def correct_pos(pos, offset=None):
+def correct_pos(pos, offset):
     if offset:
         pos = (pos[0] - offset[0], pos[1] - offset[1])
     return pos
