@@ -11,7 +11,8 @@ from lib.items import DirItem, FileItem, DisabledItem
 
 def view_db(tree_widget):
     if DBSession.bind:
-        metadata = MetaData(DBSession.bind, reflect=True)
+        metadata = MetaData(DBSession.bind)
+        metadata.reflect()
 
         for table in metadata.tables:
             tdata = metadata.tables.get(table)
@@ -19,14 +20,17 @@ def view_db(tree_widget):
 
             for column in tdata.c:
                 if column.primary_key:
-                    column_item = DisabledItem(table_item, column.name, summary=column)
+                    column_item = DisabledItem(table_item, column.name)
                     column_item.setBrief(u"Главный ключ, просмотр отключен!")
+#                   column_item.setSummary(column)
                 elif column.foreign_keys:
-                    column_item = DisabledItem(table_item, column.name, summary=column)
+                    column_item = DisabledItem(table_item, column.name)
                     column_item.setBrief(u"Ссылка на другую таблицу, просмотр отключен!")
+#                   column_item.setSummary(column)
                 else:
-                    column_item = FileItem(table_item, column.name, summary=column)
+                    column_item = FileItem(table_item, column.name)
                     column_item.setBrief(get_distinct(column))
+#                   column_item.setSummary(column)
 
             table_item.setExpanded(True)
 

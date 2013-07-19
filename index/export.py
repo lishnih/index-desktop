@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2012-03-12, 2013-02-22
+# Stan 2012-03-12
 
 import sys, os, logging
 
@@ -17,12 +17,17 @@ from lib.options_funcs  import get_options
 from lib.items          import DirItem
 
 
+# def init_translator():
+#     translator = QtCore.QTranslator()
+#     translator.load("ru")
+#     app.installTranslator(translator)
+
 tracing = []
 
 
 def Proceed(sources, args, datadir=None, tree_widget=None):
-    taskname = args.task
-    method = args.method
+    taskname = args.get("task", "default")
+    method = args.get("method", "default")
 
     if not datadir:
         datadir = '.'

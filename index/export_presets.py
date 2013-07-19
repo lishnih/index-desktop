@@ -2,15 +2,22 @@
 # coding=utf-8
 # Stan 2013-02-22
 
+from __future__ import ( division, absolute_import,
+                         print_function, unicode_literals )
+
 import os, re, pickle, logging
 from PySide import QtCore
 
+try:
+    from .lib.backwardcompat import *
+    from .lib.settings import Settings
+    from .lib.tkprop import propertyDialog
+except:
+    from lib.backwardcompat import *
+    from lib.settings import Settings
+    from lib.tkprop import propertyDialog
+
 from presets import *
-
-
-# Настройки: [HKCU\Software\lishnih@gmail.com\<app_section>]
-company_section = "lishnih@gmail.com"
-app_section = re.sub(r'\W', '_', os.path.dirname(os.path.dirname(__file__)))
 
 
 def save_entry(filename, entry):
@@ -21,10 +28,21 @@ def save_entry(filename, entry):
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    settings = QtCore.QSettings(company_section, app_section)
-    logging.info(u"Settings: '{}' / '{}'".format(company_section, app_section))
+    s = Settings()
+    for i in [
+        'home',
+        'instance',
+        'location',
+        'app',
+        'name',
+        'path',
+        'filename',
+    ]:
+        print("{0:20}: {1}".format(i, getattr(s, i)))
 
-    appdata = settings.value("appdata")
+    print()
+
+    appdata = s.get("app")
     if not appdata:
         logging.warning(u"Запустите скрипт index, чтобы инициализировать директорию с данными")
         return
