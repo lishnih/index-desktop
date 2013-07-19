@@ -7,7 +7,7 @@ from PySide import QtCore, QtGui
 
 import dragwidget_rc
 from dialog_settings import Settings
-from task_item import init_task, draw_task, redraw, highlight
+from task_item import init_task, draw_task, redraw, highlight, proceed_task
 
 
 class DragWidget(QtGui.QFrame):
@@ -22,15 +22,20 @@ class DragWidget(QtGui.QFrame):
         self.setAcceptDrops(True)
 
         # Выпадающее меню
+        self.actionProceed = QtGui.QAction(self)
+        QtCore.QObject.connect(self.actionProceed, QtCore.SIGNAL("triggered()"), self.OnProceed)
+        self.actionProceed.setText(QtGui.QApplication.translate("DragWidget", "Proceed", None, QtGui.QApplication.UnicodeUTF8))
+
         self.actionDebug = QtGui.QAction(self)
-        QtCore.QObject.connect(self.actionDebug, QtCore.SIGNAL("triggered()"), self.debugEvent)
+        QtCore.QObject.connect(self.actionDebug, QtCore.SIGNAL("triggered()"), self.OnDebug)
         self.actionDebug.setText(QtGui.QApplication.translate("DragWidget", "Debug", None, QtGui.QApplication.UnicodeUTF8))
 
         self.actionDelete = QtGui.QAction(self)
-        QtCore.QObject.connect(self.actionDelete, QtCore.SIGNAL("triggered()"), self.deleteEvent)
+        QtCore.QObject.connect(self.actionDelete, QtCore.SIGNAL("triggered()"), self.OnDelete)
         self.actionDelete.setText(QtGui.QApplication.translate("DragWidget", "Delete", None, QtGui.QApplication.UnicodeUTF8))
 
         self.menuTask = QtGui.QMenu()
+        self.menuTask.addAction(self.actionProceed)
         self.menuTask.addAction(self.actionDebug)
         self.menuTask.addAction(self.actionDelete)
 
@@ -92,7 +97,7 @@ class DragWidget(QtGui.QFrame):
         if source == None:
             urls = event.mimeData().urls()
             if urls:
-                sources = [i.path() for i in urls]
+                sources = [i.path()[1:] for i in urls]
 
                 child = self.childAt(pos)
                 if child:
@@ -186,13 +191,16 @@ class DragWidget(QtGui.QFrame):
         res = dialog.exec_()
 
 
-    def debugEvent(self):
-        for i in self.tasks_list():
-            print i
-            print
+    def OnProceed(self):
+        proceed_task(self.selected.taskData)
 
 
-    def deleteEvent(self):
+    def OnDebug(self):
+        print self.selected.taskData
+        print
+
+
+    def OnDelete(self):
         self.selected.close()
 
 

@@ -32,13 +32,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     import argparse
-    from lib.argparse_funcs import readable_dir
 
     parser = argparse.ArgumentParser(description='Tools for creating tasks.')
-    parser.add_argument('--indexscript', action='store_true',
-                        help='get directory of index script')
-    parser.add_argument('--setindexscript', action=readable_dir,
-                        help='set directory of index script', metavar='INDEXSCRIPT')
 
     if sys.version_info >= (3,):
         argv = sys.argv

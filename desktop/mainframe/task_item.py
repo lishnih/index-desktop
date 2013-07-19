@@ -3,6 +3,7 @@
 # Stan 2013-02-14
 
 import sys, os
+import subprocess, multiprocessing, logging
 from PySide import QtCore, QtGui
 from sqlalchemy import types
 
@@ -16,7 +17,10 @@ def init_task(parent, sources=[], pos=None):
         name = name + "+"
 
     sources = set(sources)
-    task = dict(name=name, pos=pos, img=":/images/file.png", sources=sources)
+    proceed = ""
+    method  = ""
+    task = dict(name=name, pos=pos, img=":/images/file.png",
+           sources=sources, proceed=proceed, method=method)
     return task
 
 
@@ -76,3 +80,41 @@ def correct_pos(pos, offset):
     if offset:
         pos = (pos[0] - offset[0], pos[1] - offset[1])
     return pos
+
+
+def proceed_task(taskData):
+    proceed = taskData.get('proceed')
+    name    = taskData.get('name')
+    method  = taskData.get('method')
+    sources = taskData.get('sources')
+
+    if proceed:
+        args = [sys.executable, proceed]
+
+        name = taskData.get('name')
+        if name:
+            args.extend(['--task', name])
+
+        method = taskData.get('method')
+        if method:
+            args.extend(['--method', method])
+
+        sources = [i for i in taskData.get('sources', [])]
+        if sources:
+            args.extend(sources)
+
+        p = multiprocessing.Process(target=worker, args=args)
+        p.start()
+    else:
+        QtGui.QMessageBox.warning(None, "Warning", u"""Скрипт proceed не задан!""")
+
+
+def worker(*args):
+    print args
+
+    fse = sys.getfilesystemencoding()
+    args = [i.encode(fse) for i in args]
+
+#   args = [sys.executable, '--help']
+    proc = subprocess.Popen(args, stderr=subprocess.STDOUT)
+    proc.communicate()

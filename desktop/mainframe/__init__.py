@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Stan 2011-06-22, 2013-02-04
+# Stan 2011-06-22
 
-import sys, os, re, time, logging
+import sys, os, re
 from PySide import QtCore, QtGui, __version__
 
 from mainframe_ui import Ui_MainWindow
 from dragwidget import DragWidget
 
 from lib.info import __description__, __version__
+from lib.backwardcompat import *
 from lib.settings import Settings
 from task_item import draw_task
 
@@ -41,12 +42,6 @@ class MainFrame(QtGui.QMainWindow):
         self.ui.gragWidget = DragWidget(self.ui.widget, self.settings, self.s)
         self.ui.gragWidget.setObjectName("gragWidget")
         verticalLayout.addWidget(self.ui.gragWidget)
-
-        # Обрабатываем параметры
-        self.proceed_args(args)
-
-        # Инициализируем пути
-#       self.s.init_path('indexscript', '../index')
 
         # Читаем из директории с базой данных данные о задачах
         self.loadScheme()
@@ -94,12 +89,10 @@ class MainFrame(QtGui.QMainWindow):
     def saveScheme(self):
         tasks = []
         for task in self.ui.gragWidget.tasks_list():
-            task_dict = dict(
-                name    = task.get('name', u"/Без имени/"),
-                img     = task.get('img', ":/images/file.png"),
-                pos     = task.get('pos'),
-                sources = task.get('sources'),
-            )
+            task_dict = {}
+            for key, value in task.items():
+                if isinstance(value, (simple_types, collections_types, dict)):
+                    task_dict[key] = value
             tasks.append(task_dict)
         self.s.set('tasks', tasks)
 
@@ -112,19 +105,3 @@ class MainFrame(QtGui.QMainWindow):
             message = u"{} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)
-
-
-    def proceed_args(self, args):
-        if args.indexscript:
-            print(u"Директория скрипта index: '{}'".format(self.s.get("indexscript")))
-            sys.exit(0)
-
-        if args.setindexscript:
-            print(u"Назначение директории скрипта index!")
-            try:    print(u"Было      | {}".format(self.s.get("indexscript")))
-            except: print(u"Было      | {!r}".format(self.s.get("indexscript")))
-            newdir = self.expand_path(args.setindexscript)
-            self.s.set("indexscript", newdir)
-            try:    print(u"Назначено | {}".format(self.s.get("indexscript")))
-            except: print(u"Назначено | {!r}".format(self.s.get("indexscript")))
-            sys.exit(0)

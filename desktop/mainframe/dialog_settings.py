@@ -2,32 +2,14 @@
 # coding=utf-8
 # Stan 2013-02-08
 
-import sys, subprocess, multiprocessing, logging
 from PySide import QtCore, QtGui
 
 
 # from dialog_settings_test_ui import Ui_Dialog
 from dialog_sources import Sources
 
-from task_item import redraw
-
-
-def worker(*args):
-    args, indexscript = args
-    logging.info(u"Cwd: {}".format(indexscript))
-
-    # Кодируем строки в пендосовскою кодировку
-    newargs = []
-    for arg in args:
-        if isinstance(arg, unicode):
-            arg = arg.encode('utf-8')
-        newargs.append(arg)
-    args = newargs
-    logging.info(u"Запуск процесса с параметрами: {!r}".format(args))
-
-#   args = [sys.executable, 'main.py', '--help']
-    proc = subprocess.Popen(args, stderr=subprocess.STDOUT, cwd=indexscript)
-    proc.communicate()
+from lib.backwardcompat import *
+from task_item import redraw, proceed_task
 
 
 class Settings(QtGui.QDialog):
@@ -36,6 +18,7 @@ class Settings(QtGui.QDialog):
         self.parent = parent
         self.child = child
         self.settings = settings
+#       self.s = s
 
         # Загружаем элементы диалога
         self.ui = Ui_Dialog()
@@ -89,7 +72,7 @@ class Settings(QtGui.QDialog):
                     le_value = le.text()
                     if self.is_changed(self.child.taskData.get(key), le_value):
                         self.child.taskData[key] = le_value
-    
+
             redraw(self.child)
 
         self.saveDialogSettings()
@@ -116,29 +99,7 @@ class Settings(QtGui.QDialog):
 
 
     def OnProceed(self):
-        indexscript = self.settings.value("indexscript")
-        if indexscript:
-            args = [sys.executable, 'main.py']
-
-            name = self.child.taskData.get('name')
-            if name:
-                args.extend(['--task', name])
-
-            method = self.child.taskData.get('method')
-            if method:
-                args.extend(['--method', method])
-
-            sources = [i for i in self.child.taskData.get('sources', [])]
-            if sources:
-                args.extend(sources)
-
-            p = multiprocessing.Process(target=worker, args=(args, indexscript))
-            p.start()
-        else:
-            QtGui.QMessageBox.warning(None, "Warning",
-                u"""Скрипт index не задан!
-Задать директорию скрипта можно с помощью команды:"
-main.py --setindexscript DIR""")
+        proceed_task(self.child.taskData)
 
 
     def OnDelete(self):
@@ -163,7 +124,7 @@ main.py --setindexscript DIR""")
 
 
     def may_change(self, value):
-        if isinstance(value, (int, float, basestring)):
+        if isinstance(value, simple_types):
             return True
 
 

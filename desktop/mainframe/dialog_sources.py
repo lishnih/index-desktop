@@ -13,7 +13,7 @@ class Sources(QtGui.QDialog):
     def __init__(self, parent, taskData, settings=None):
         super(Sources, self).__init__(parent)
 #       self.parent = parent
-#       self.taskData = taskData
+        self.taskData = taskData
         self.settings = settings
 
         # Загружаем элементы диалога
@@ -24,7 +24,7 @@ class Sources(QtGui.QDialog):
         self.loadDialogSettings()
 
         # Добавляем виджеты
-        for filename in taskData['sources']:
+        for filename in self.taskData['sources']:
             self.ui.listWidget.addItem(filename)
 
 
