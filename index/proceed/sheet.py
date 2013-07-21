@@ -31,7 +31,7 @@ def proceed_sheet(sh, options, FILE, i=None):
             SHEET.sheet_test = test_cell
             SHEET.groups = groups
         else:
-            msg = u"В ({},{}) ожидается: '{}', найдено: '{}'".format(row, col, test_pattern, test_cell)
+            msg = u"В ({0},{1}) ожидается: '{2}', найдено: '{3}'".format(row, col, test_pattern, test_cell)
             reg_warning(SHEET, msg)
 
         TASK = FILE._dir._source._task

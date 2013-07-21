@@ -12,33 +12,35 @@ from proceed.file       import proceed_file
 from reg                import set_object
 from reg.result         import reg_exception
 
+from lib.settings       import Settings
 from lib.data_funcs     import get_list, filter_match, filter_list
 from lib.options_funcs  import get_options
 from lib.items          import DirItem
+from lib.dump           import plain
 
-
-# def init_translator():
-#     translator = QtCore.QTranslator()
-#     translator.load("ru")
-#     app.installTranslator(translator)
 
 tracing = []
 
 
-def Proceed(sources, args, datadir=None, tree_widget=None):
+def ProceedInit(sources, settings=None, args=None, tree_widget=None):
+    datadir  = settings.get("datadir", '.')
     taskname = args.get("task", "default")
-    method = args.get("method", "default")
-
-    if not datadir:
-        datadir = '.'
+    method   = args.get("method", "default")
 
     # Получаем настройки метода
     options = get_options(datadir, method)
+    if not options:
+        print u"Настройки задачи не найдены!"
+        print "settings:", settings
+        print "datadir: ", datadir
+        print
+        print "args:    ", plain(args)
+        print "method:  ", method
 
     dbpath = options.get('dbpath', datadir)
     dbname = options.get('dbname', "index.sqlite")
     db_path = os.path.join(dbpath, dbname)
-    db_uri_default = u'sqlite:///{}'.format(db_path)
+    db_uri_default = u'sqlite:///{0}'.format(db_path)
     db_uri = options.get('db_uri', db_uri_default)
     try:
         initDb(db_uri, DBSession, Base)
@@ -50,10 +52,10 @@ def Proceed(sources, args, datadir=None, tree_widget=None):
 
     sources = get_list(sources)
     for source in sources:
-        Proceed1(source, taskname, options, tree_widget)
+        Proceed(source, taskname, options, tree_widget)
 
 
-def Proceed1(source, taskname=None, options=None, tree_widget=None):
+def Proceed(source, taskname=None, options=None, tree_widget=None):
     filename = os.path.abspath(source)
     filename = filename.replace('\\', '/')    # приводим к стилю Qt
 
@@ -61,7 +63,7 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
     SOURCE = proceed_task(taskname, filename, options, tree_widget)
 
     if os.path.isdir(filename):
-        logging.info(u"Обработка директории '{}'".format(filename))
+        logging.info(u"Обработка директории '{0}'".format(filename))
 
         dirs_filter = options.get('dirs_filter')
         files_filter = options.get('files_filter')
@@ -88,7 +90,7 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
                 proceed_file(filename, options, DIR)
 
     elif os.path.isfile(filename):
-        logging.info(u"Обработка файла '{}'".format(filename))
+        logging.info(u"Обработка файла '{0}'".format(filename))
 
         # Dir
         dirname = os.path.dirname(filename)
@@ -98,7 +100,7 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
         proceed_file(filename, options, DIR)
 
     else:
-        logging.warning(u"Не найден файл/директория '{}'!".format(filename))
+        logging.warning(u"Не найден файл/директория '{0}'!".format(filename))
 
     try:
         DBSession.commit()
@@ -107,17 +109,14 @@ def Proceed1(source, taskname=None, options=None, tree_widget=None):
 
 
 def main(args=None):
-#     if has_preset(source):
-#         enabled, taskname1, options1 = get_preset(source)
-#         taskname = taskname or taskname1
-#         options  = options  or options1
-#
-#     for source, enabled, taskname, options in get_presets():
-#         if enabled:
-#             Proceed(source, taskname, options)
-
     if args.files:
-        Proceed(args.files, "from console")
+        s = Settings()
+        s.saveEnv()
+
+        args = dict(args._get_kwargs())
+        ProceedInit(args['files'], self.s, args)
+    else:
+        logging.warning(u"Файлы не заданы!")
 
 
 if __name__ == '__main__':
@@ -129,6 +128,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Indexing files and directories.')
     parser.add_argument('files', action=readable_file_or_dir_list, nargs='*',
                         help='files and directories to proceed')
+    parser.add_argument('-t', '--task',
+                        help='specify the task name')
+    parser.add_argument('-m', '--method',
+                        help='specify the method name')
 
     if sys.version_info >= (3,):
         argv = sys.argv

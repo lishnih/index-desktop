@@ -35,14 +35,14 @@ class Settings(QtGui.QDialog):
         for key in sorted(self.child.taskData.keys()):
             value = self.child.taskData.get(key)
             tt = str(type(value)).replace('<', '&lt;').replace('>', '&gt;')
-            text = u'{}<br/><span style="color:#aaaaaa;">{}</span>'.format(key, tt)
+            text = u'{0}<br/><span style="color:#aaaaaa;">{1}</span>'.format(key, tt)
             label = QtGui.QLabel(text, Dialog)
 #           label.setFrameStyle(QtGui.QFrame.Panel)
 #           label.setLineWidth(1)
 #           formLayout.setWidget(i, QtGui.QFormLayout.LabelRole, label)
 
             lineEdit = QtGui.QLineEdit(unicode(value), Dialog)
-            lineEdit.setObjectName("le_{}".format(key))
+            lineEdit.setObjectName("le_{0}".format(key))
             if not self.may_change(value):
                 lineEdit.setDisabled(True)
 #           formLayout.setWidget(i, QtGui.QFormLayout.FieldRole, lineEdit)
@@ -68,7 +68,7 @@ class Settings(QtGui.QDialog):
         else:
             for key, value in self.child.taskData.items():
                 if self.may_change(value):
-                    le = self.findChild(QtGui.QLineEdit, "le_{}".format(key))
+                    le = self.findChild(QtGui.QLineEdit, "le_{0}".format(key))
                     le_value = le.text()
                     if self.is_changed(self.child.taskData.get(key), le_value):
                         self.child.taskData[key] = le_value
@@ -136,7 +136,7 @@ class Settings(QtGui.QDialog):
             try:
                 value2 = type1(value2)
             except:
-                print(u"Не могу конвертировать {} в тип {}".format(value2, type1))
+                print(u"Не могу конвертировать {0} в тип {1}".format(value2, type1))
                 return
 
         if value1 != value2:

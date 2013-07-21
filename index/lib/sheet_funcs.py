@@ -68,7 +68,7 @@ def get_date(date_str):
         if res:
             reslist = res.groups()
             day, month, year = reslist
-            date_str = "{}.{}.{}".format(day, month, year)
+            date_str = "{0}.{1}.{2}".format(day, month, year)
             year = int(year)
             date = calendar.timegm(time.strptime(date_str, "%d.%m.%Y")) if year >= 100 else \
                    calendar.timegm(time.strptime(date_str, "%d.%m.%y"))

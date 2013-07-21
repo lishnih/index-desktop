@@ -21,7 +21,7 @@ def initDb(db_uri=None, session=None, base=None):
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         if not os.path.isdir(dirname):
-            logging.error(u'Невозможно создать директорию "{}"'.format(dirname))
+            logging.error(u'Невозможно создать директорию "{0}"'.format(dirname))
             return
 
     session.configure(bind=engine)
@@ -34,9 +34,9 @@ def initDb(db_uri=None, session=None, base=None):
 def getDefaultDb():
     dbname = "index"
     home = os.path.expanduser("~")
-    db_path = os.path.join(os.path.expanduser("~"), "{}.sqlite".format(dbname))
-    db_uri = 'sqlite:///{}'.format(db_path)
-#   db_uri = 'mysql+oursql://root:54321@localhost/{}'.format(dbname)
+    db_path = os.path.join(os.path.expanduser("~"), "{0}.sqlite".format(dbname))
+    db_uri = 'sqlite:///{0}'.format(db_path)
+#   db_uri = 'mysql+oursql://root:54321@localhost/{0}'.format(dbname)
 
     return db_uri
 
@@ -50,7 +50,7 @@ def archiveDb(engine):
         filename = engine.url.database
         archivefile(filename)
     else:
-        logging.warning(u"Для данного типа БД архивирование не предусмотрено: {}, пропускаем архивирование!".format(engine.name))
+        logging.warning(u"Для данного типа БД архивирование не предусмотрено: {0}, пропускаем архивирование!".format(engine.name))
 
 
 def archiveFile(filename):
@@ -61,7 +61,7 @@ def archiveFile(filename):
         basename  = os.path.basename(filename)
         root, ext = os.path.splitext(basename)
 
-        basename_new = u"{}_{}{}".format(root, timestamp, ext)
+        basename_new = u"{0}_{1}{2}".format(root, timestamp, ext)
         dirname_new  = os.path.join(dirname, u"backup")
         if not os.path.exists(dirname_new):
             os.makedirs(dirname_new)

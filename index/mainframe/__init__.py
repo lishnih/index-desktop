@@ -7,7 +7,7 @@ from PySide import QtCore, QtGui, __version__
 
 from mainframe_ui import Ui_MainWindow
 from thread1 import th                  # Поток (уже созданный)
-from export import Proceed              # Модуль обработки
+from export import ProceedInit          # Модуль обработки
 from view_db import view_db
 
 from lib.info import __description__, __version__
@@ -41,6 +41,9 @@ class MainFrame(QtGui.QMainWindow):
         # Назначаем потоку callback-функции
         th.set_callback(self.update_func, self.ending_func)
 
+        # Инициализируем datadir
+        self.s.init_path('datadir', '~~~')
+
         # Обрабатываем параметры
         self.proceed_args(args)
 
@@ -59,13 +62,13 @@ class MainFrame(QtGui.QMainWindow):
 
     def update_func(self, msecs):
         time_str = self.convert_time(msecs)
-        self.ui.statusbar.showMessage(u"{}   |   Processing {}".format(self.sb_message, time_str))
+        self.ui.statusbar.showMessage(u"{0}   |   Processing {1}".format(self.sb_message, time_str))
 
 
     def ending_func(self, msecs, message=''):
         time_str = self.convert_time(msecs)
-        message = u"   |   {}".format(message) if message else ''
-        self.ui.statusbar.showMessage(u"{}   |   Processed in {}{}".format(self.sb_message, time_str, message))
+        message = u"   |   {0}".format(message) if message else ''
+        self.ui.statusbar.showMessage(u"{0}   |   Processed in {1}{2}".format(self.sb_message, time_str, message))
 
 
 # События
@@ -90,8 +93,7 @@ class MainFrame(QtGui.QMainWindow):
             self.set_status(selected_dir)
 
             # Запускаем обработку
-            datadir = self.s.get("app")
-            th.start(Proceed, selected_dir, {}, datadir, tree_widget=self.ui.tree)
+            th.start(ProceedInit, selected_dir, self.s, {}, tree_widget=self.ui.tree)
 
 
     def OnTaskFile(self):
@@ -112,8 +114,7 @@ class MainFrame(QtGui.QMainWindow):
             self.set_status(selected_file)
 
             # Запускаем обработку
-            datadir = self.s.get("app")
-            th.start(Proceed, selected_file, {}, datadir, tree_widget=self.ui.tree)
+            th.start(ProceedInit, selected_file, self.s, {}, tree_widget=self.ui.tree)
 
 
     def OnClose(self):
@@ -155,8 +156,8 @@ class MainFrame(QtGui.QMainWindow):
 <html>
 <head></head>
 <body>
-  <h3>{}</h3>
-  {}
+  <h3>{0}</h3>
+  {1}
 </body>
 </html>"""
         it = 1
@@ -217,7 +218,7 @@ class MainFrame(QtGui.QMainWindow):
 
     def set_status(self, message=''):
         if isinstance(message, (list, tuple)):
-            message = u"{} и др. значения".format(message[0])
+            message = u"{0} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)
 
@@ -228,5 +229,5 @@ class MainFrame(QtGui.QMainWindow):
             self.set_status(args.files)
 
             # Запускаем обработку
-            datadir = self.s.get("app")
-            th.start(Proceed, args.files, args, datadir, tree_widget=self.ui.tree)
+            args = dict(args._get_kwargs())
+            th.start(ProceedInit, args['files'], self.s, args, tree_widget=self.ui.tree)

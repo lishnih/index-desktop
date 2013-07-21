@@ -16,7 +16,7 @@ from lib.xlrd_macro import search_value
 
 def e_func(func_name, e, *args, **kargs):
     OBJ = args[2]
-    e = "/Error in '{}'/ {}".format(func_name, e)
+    e = "/Error in '{0}'/ {1}".format(func_name, e)
     reg_exception(OBJ, e, *args, **kargs)
 
 
@@ -46,9 +46,9 @@ def parse_doc(sh, options, SHEET):
                     if val2:
                         val_list.append(val2)
                 doc_dict[key+'_list'] = val_list
-                test += u"{} [{},{}]: {} /{!r}/ + /{!r}/\n".format(key, last_y, last_x, val, val, val_list)
+                test += u"{0} [{1},{2}]: {3} /{4!r}/ + /{5!r}/\n".format(key, last_y, last_x, val, val, val_list)
             else:
-                reg_warning(SHEET, u"Значение не найдено: '{}', пропускаем лист!".format(params))
+                reg_warning(SHEET, u"Значение не найдено: '{0}', пропускаем лист!".format(params))
                 return
         elif l == 2:
             y, x = params
@@ -58,7 +58,7 @@ def parse_doc(sh, options, SHEET):
                 y = last_y + int(y)
             val = get_value(sh, y, x)
             doc_dict[key] = val
-            test += u"{} [{},{}]: {} /{!r}/\n".format(key, y, x, val, val)
+            test += u"{0} [{1},{2}]: {3} /{4!r}/\n".format(key, y, x, val, val)
         elif l == 3:
             y, x = params
             if isinstance(x, basestring):
@@ -67,7 +67,7 @@ def parse_doc(sh, options, SHEET):
                 y = last_y + int(y)
             val = get_value(sh, y, x)
             doc_dict[key] = val
-            test += u"{} [{},{},{}]: {} /{!r}/\n".format(key, y, x, pattern, val, val)
+            test += u"{0} [{1},{2},{3}]: {4} /{5!r}/\n".format(key, y, x, pattern, val, val)
 
     remarks = {}
     for item, funcs_name in doc_funcs.items():
@@ -118,7 +118,7 @@ def parse_table_iter(sh, options, SHEET):
     if isinstance(row_start, basestring):
         yx = search_value(sh, row_start)
         if not yx:
-            reg_warning(SHEET, u"Начало таблицы не найдено: '{}', пропускаем лист!".format(row_start))
+            reg_warning(SHEET, u"Начало таблицы не найдено: '{0}', пропускаем лист!".format(row_start))
             return
         row_start = yx[0] + 1 + row_start_skip
         SHEET.row_start = row_start
@@ -128,7 +128,7 @@ def parse_table_iter(sh, options, SHEET):
     if isinstance(row_stop, basestring):
         yx = search_value(sh, row_stop)
         if not yx:
-            reg_warning(SHEET, u"Конец таблицы не найден: '{}', индексируем весь лист!".format(row_stop))
+            reg_warning(SHEET, u"Конец таблицы не найден: '{0}', индексируем весь лист!".format(row_stop))
             row_stop = sh.nrows
         else:
             row_stop = yx[0] - row_stop_skip
@@ -139,7 +139,7 @@ def parse_table_iter(sh, options, SHEET):
         if typical_column:
             TASK = SHEET._file._dir._source._task
             row_dict = dict(_task=TASK, j=j)
-            test = u"Номер строки: {}\n".format(j)
+            test = u"Номер строки: {0}\n".format(j)
 
             if col_mode == 'column':
                 i = 0
@@ -148,7 +148,7 @@ def parse_table_iter(sh, options, SHEET):
                         if isinstance(col_name, basestring):
                             val = get_value(sh, j, i)
                             row_dict[col_name] = val
-                            test += u"({}:{}) {}: {} /{!r}/\n".format(j, i, col_name, val, val)
+                            test += u"({0}:{1}) {2}: {3} /{4!r}/\n".format(j, i, col_name, val, val)
                         if isinstance(col_name, list):
                             inner_row = 0
                             for inner_col_name in col_name:
@@ -164,7 +164,7 @@ def parse_table_iter(sh, options, SHEET):
                     if val:
                         col_name = col_names[col]
                         row_dict[col_name] = val
-                        test += u"({}:{}) {}: {} /{!r}/\n".format(j, i, col_name, val, val)
+                        test += u"({0}:{1}) {2}: {3} /{4!r}/\n".format(j, i, col_name, val, val)
                         col += 1
                         if col > len(col_names):
                             break
@@ -187,7 +187,7 @@ def parse_table_iter(sh, options, SHEET):
 #             test_row = ''
 #             for i in xrange(sh.ncols):
 #                 val = get_value(sh, j, i)
-#                 test_row += u"({}): {} /{!r}/\n".format(i, val, val)
+#                 test_row += u"({0}): {1} /{2!r}/\n".format(i, val, val)
 #             row_dict['test_row'] = test_row
 
             if row_dict:

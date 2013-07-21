@@ -31,8 +31,8 @@ def contain_value(sh, row, col, seaching_value):
             try:
                 val = type2(val)
             except:
-#               logging.debug("search: {!r} ({!r})".format(seaching_value, type(seaching_value)))
-#               logging.debug("found:  {!r} ({!r})".format(val, type(val)))
+#               logging.debug("search: {0!r} ({1!r})".format(seaching_value, type(seaching_value)))
+#               logging.debug("found:  {0!r} ({1!r})".format(val, type(val)))
                 return None
 
         if isinstance(seaching_value, basestring):
@@ -78,9 +78,9 @@ def search_hor_value(sh, formsearch):
             logging.error(u"""Ошибка при выборке данных!
 Проверьте ячейки, из которой извлекаются данные
 Возможно, у Вас неправильно настроен шаблон
-{!r}
-pattern: {!r}
-str:     {!r}""".format(e, pattern, str))
+{0!r}
+pattern: {1!r}
+str:     {2!r}""".format(e, pattern, str))
             res = None
         if res:
             reslist = res.groups()
@@ -130,6 +130,6 @@ str:     {!r}""".format(e, pattern, str))
                         found.append("")
 
     else:
-        logging.error(u"Неправильный formsearch [{}]".format(form_len))
+        logging.error(u"Неправильный formsearch [{0}]".format(form_len))
 
     return [x0, y0, found] if found else hint

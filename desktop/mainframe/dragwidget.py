@@ -82,7 +82,7 @@ class DragWidget(QtGui.QFrame):
             if event.mimeData().hasFormat('application/x-dnditemdata'):
                 itemData = event.mimeData().data('application/x-dnditemdata')
                 dataStream = QtCore.QDataStream(itemData, QtCore.QIODevice.ReadOnly)
-    
+
                 pixmap = QtGui.QPixmap()
                 offset = QtCore.QPoint()
                 dataStream >> offset
@@ -107,7 +107,7 @@ class DragWidget(QtGui.QFrame):
                 else:
                     task = init_task(self, sources, pos)
                     draw_task(self, task, middle=1)
-    
+
                 event.accept()
             else:
                 event.ignore()

@@ -69,6 +69,17 @@ class Settings(object):
             yield key, self.settings[key]
 
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+
+    def __unicode__(self):
+        str = "{0}".format(type(self))
+        for key, value in self:
+            str += "\n    {0:20}: {1:16}{2}".format(key, type(value), value)
+        return str
+
+
     def flush(self):
         save_entry(self.filename, self.settings)
 

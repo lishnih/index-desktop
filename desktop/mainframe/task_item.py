@@ -62,7 +62,7 @@ def redraw(child):
     sources = taskData.get('sources', [])
     count = len(sources)
 
-    taskIcon.setText(u'<p align="center"><img src="{}"/><br/>{}<br/>Всего {} элем.</p>'.format(img, name, count))
+    taskIcon.setText(u'<p align="center"><img src="{0}"/><br/>{1}<br/>Всего {2} элем.</p>'.format(img, name, count))
 
 
 def highlight(child):

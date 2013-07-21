@@ -34,13 +34,12 @@ def view_plain(s):
 
     print()
 
-    s.set_path('home',     '~',   True)
-    s.set_path('location', '~~',  True)
-    s.set_path('app',      '~~~', True)
-    s.set_path('instance', '$')
+    s.set_path('test_home',     '~',   True)
+    s.set_path('test_location', '~~',  True)
+    s.set_path('test_app',      '~~~', True)
+    s.set_path('test_instance', '$')
 
-    for key, value in s:
-        print("{0:20}: {1:16}{2}".format(key, type(value), value))
+    print(s)
 
 
 def onShowSettings(event):

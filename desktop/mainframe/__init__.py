@@ -102,6 +102,6 @@ class MainFrame(QtGui.QMainWindow):
 
     def set_status(self, message=''):
         if isinstance(message, (list, tuple)):
-            message = u"{} и др. значения".format(message[0])
+            message = u"{0} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)

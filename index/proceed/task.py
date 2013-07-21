@@ -24,7 +24,7 @@ def proceed_task(taskname, filename, options, tree_widget=None):
         elif isinstance(value, dict):
             value = pickle.dumps(value)
         else:
-            logging.warning(u"Неподдерживаемый тип данных: {!r}{!r}".format(type(value), value))
+            logging.warning(u"Неподдерживаемый тип данных: {0!r}{1!r}".format(type(value), value))
         OPTION = Option(
             _source = SOURCE,
             name = key,

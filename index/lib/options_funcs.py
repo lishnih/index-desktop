@@ -19,7 +19,7 @@ def load_entry(filename):
 
 def get_options(datadir=None, method=None):
     if datadir and method:
-        filename = os.path.join(datadir, "{}.pickle".format(method))
+        filename = os.path.join(datadir, "{0}.pickle".format(method))
         options = load_entry(filename)
     else:
         options = {}
