@@ -16,7 +16,7 @@ else:
 
 here = os.path.abspath(os.path.dirname(__file__))
 try:
-    README = open(os.path.join(here, 'README.txt')).read()
+    README = open(os.path.join(here, 'README.md')).read()
     CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 except IOError:
     README = CHANGES = ''
@@ -30,11 +30,11 @@ if __name__ == '__main__':
     setup(
         name='index',
         version='0.2',
-        url='http://github.com/lishnih/index',
+        url='http://github.com/lishnih/index-desktop',
         license='MIT',
         author='Stan',
         author_email='lishnih@gmail.com',
-        description=('Document Index'),
+        description=('Desktop for Index System'),
         long_description=__doc__,
         packages=find_packages(),
         include_package_data=True,
