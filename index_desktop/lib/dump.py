@@ -69,7 +69,7 @@ def plain(obj, level=0):
 
     if isinstance(obj, dict):
         buf += "{\n"
-        for key in sorted(obj.keys()):
+        for key in sorted(obj.keys(), key=unicode):
             val = obj[key]
             key = plain(key)
             buf += wrap + "    {0:16}: {1}\n".format(key, plain(val, level+1))
@@ -85,5 +85,5 @@ def plain(obj, level=0):
         except Exception as e: val = "*** {0} ***".format(e)
         if key[0:2] != '__' and not callable(val):
             buf += wrap + "    {0:16}: {1}\n".format(key, plain(val, level+1))
-    buf += wrap + "}}"
+    buf += wrap + "}"
     return buf
