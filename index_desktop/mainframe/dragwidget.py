@@ -21,7 +21,7 @@ class DragWidget(QtGui.QFrame):
         self.setFrameStyle(QtGui.QFrame.StyledPanel)
         self.setAcceptDrops(True)
 
-        # Выпадающее меню
+        # Контекстное меню
         self.actionProceed = QtGui.QAction(self)
         QtCore.QObject.connect(self.actionProceed, QtCore.SIGNAL("triggered()"), self.OnProceed)
         self.actionProceed.setText(QtGui.QApplication.translate("DragWidget", "Proceed", None, QtGui.QApplication.UnicodeUTF8))
