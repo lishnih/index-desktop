@@ -25,9 +25,10 @@ if sys.version_info >= (3,):
     from tkinter import ttk
     from tkinter.font import Font
     from tkinter.filedialog import (askdirectory, askopenfilename,
-         asksaveasfilename)
+                                    asksaveasfilename)
     from tkinter.messagebox import (showinfo, showwarning, showerror,
-         askquestion, askokcancel, askyesno, askretrycancel)
+                                    askquestion, askokcancel, askyesno,
+                                    askretrycancel)
 
     class aStr():
         def __str__(self):
@@ -77,9 +78,10 @@ else:
     import ttk
     from tkFont import Font
     from tkFileDialog import (askdirectory, askopenfilename,
-         asksaveasfilename)
+                              asksaveasfilename)
     from tkMessageBox import (showinfo, showwarning, showerror,
-         askquestion, askokcancel, askyesno, askretrycancel)
+                              askquestion, askokcancel, askyesno,
+                              askretrycancel)
 
     class aStr():
         def __str__(self):

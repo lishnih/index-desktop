@@ -2,23 +2,28 @@
 # coding=utf-8
 # Stan 2013-05-07
 
-from __future__ import ( division, absolute_import,
-                         print_function, unicode_literals )
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
+import sys
+import os
+import glob
+import logging
+from importlib import import_module
 
 try:
-    from .lib.backwardcompat import *
-    from .lib.info import __pkgname__, __description__, __version__
-    from .lib.dump import plain
-    from .lib.settings import Settings
-    from .lib.tkprop import propertyDialog
-except:
-    from lib.backwardcompat import *
-    from lib.info import __pkgname__, __description__, __version__
-    from lib.dump import plain
-    from lib.settings import Settings
-    from lib.tkprop import propertyDialog
+    from . import __pkgname__, __description__, __version__
+    from .core.backwardcompat import *
+    from .core.dump import plain
+    from .core.settings import Settings
+    from .core.tkprop import propertyDialog
 
-import sys, os, glob, importlib, logging
+except:
+    from __init__ import __pkgname__, __description__, __version__
+    from core.backwardcompat import *
+    from core.dump import plain
+    from core.settings import Settings
+    from core.tkprop import propertyDialog
 
 
 def import_file(filename):
@@ -27,7 +32,7 @@ def import_file(filename):
 
     root, ext = os.path.splitext(basename)
     try:
-        module = importlib.import_module(root)
+        module = import_module(root)
     except Exception as e:
         module = None
         logging.exception(e)
@@ -41,7 +46,7 @@ class AppUI(tk.Tk):
         tk.Tk.__init__(self)
         self.title("tkSettings")
 
-        ### Menu ###
+        # === Menu ===
 
         self.menubar = tk.Menu(self)
 
@@ -66,7 +71,7 @@ class AppUI(tk.Tk):
 
         self.config(menu=self.menubar)
 
-        ### Widgets ###
+        # === Widgets ===
 
         # Frame with Buttons
         self.frame1 = tk.Frame(self)
@@ -107,7 +112,7 @@ class AppUI(tk.Tk):
         label1 = tk.Label(self, textvariable=self.status, anchor=tk.W)
         self.setStatus()
 
-        ### Grid widgets ###
+        # === Grid widgets ===
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1, minsize=120)
@@ -121,7 +126,7 @@ class AppUI(tk.Tk):
         self.grid_rowconfigure(1)
         label1.grid(row=1, column=0, columnspan=4, sticky='nwes')
 
-        ### Initial ###
+        # === Initial ===
 
         self.onLoadDefault()
 
@@ -145,7 +150,7 @@ class AppUI(tk.Tk):
         self.appendText(self.s.get_dict())
         self.setStatus(self.s.get_filename())
 
-    ### From menu ###
+    # === From menu ===
 
     def onAbout(self):
         text = """{0}\n{1}\nVersion {2}\n
@@ -202,12 +207,14 @@ Package: {4}
             self.setText()
             self.setStatus()
 
-    ### From buttons ###
+    # === From buttons ===
 
     def onShowSettings(self, event):
         propertyDialog(self.s.get_dict())
 
     def onSaveTestData(self, event):
+#       answer = YesNoDialog(self.s.get_dict(), "Would you like append new data?")
+
         self.s.saveEnv()
         self.s.set_path('test_instance', '$')
         self.s.set_path('test_home',     '~')
@@ -235,7 +242,12 @@ Package: {4}
                 for i in dir(module):
                     if i[0] != '_':
                         value = getattr(module, i)
-                        if isinstance(value, all_types):
+
+                        # Словари объединяем
+                        if isinstance(value, dict) and isinstance(BRANCH.get(i), dict):
+                            BRANCH.update(value)
+
+                        elif isinstance(value, all_types):
                             BRANCH.set(i, value)
 
                 self.showInfo()

@@ -2,11 +2,13 @@
 # coding=utf-8
 # Stan 2013-02-10
 
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
 import sys
 from PySide import QtCore, QtGui
 
-
-from dialog_sources_ui import Ui_Dialog
+from .dialog_sources_ui import Ui_Dialog
 
 
 class Sources(QtGui.QDialog):
@@ -30,16 +32,13 @@ class Sources(QtGui.QDialog):
 
 # События
 
-
     def accept(self):
         self.saveDialogSettings()
         self.done(True)
 
-
     def reject(self):
         self.saveDialogSettings()
         self.done(False)
-
 
     def closeEvent(self, event):
         self.saveDialogSettings()
@@ -47,13 +46,11 @@ class Sources(QtGui.QDialog):
 
 # Сервисные функции
 
-
     # Восстанавливаем состояние окна
     def loadDialogSettings(self):
         if self.settings:
             self.restoreGeometry(self.settings.value("geometry_sources"))
 #           self.restoreState(self.settings.value("windowState_settings"))
-
 
     # Сохраняем состояние окна
     def saveDialogSettings(self):

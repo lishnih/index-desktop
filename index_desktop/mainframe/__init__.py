@@ -2,16 +2,23 @@
 # coding=utf-8
 # Stan 2011-06-22
 
-import sys, os, re
-from PySide import QtCore, QtGui, __version__
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
 
-from mainframe_ui import Ui_MainWindow
-from dragwidget import DragWidget
+import sys
+import os
+import re
+from PySide import QtCore, QtGui, __version__ as pyside_version
 
-from lib.info import __description__, __version__
-from lib.backwardcompat import *
-from lib.settings import Settings
-from task_item import draw_task
+from .. import __pkgname__, __description__, __version__
+
+from ..core.backwardcompat import *
+from ..core.settings import Settings
+
+from .mainframe_ui import Ui_MainWindow
+from .dragwidget import DragWidget
+
+from .task_item import draw_task
 
 
 # Настройки: [HKCU\Software\lishnih@gmail.com\<app_section>]
@@ -49,23 +56,21 @@ class MainFrame(QtGui.QMainWindow):
 
 # События
 
-
     def OnAbout(self):
-        msg  = u"{0}\n".format(__description__)
-        msg += u"Version: {0}\n\n".format(__version__)
+        msg = "{0}\n".format(__pkgname__)
+        msg += "{0}\n".format(__description__)
+        msg += "Version: {0}\n\n".format(__version__)
 
-        msg += u"Author: Stan <lishnih@gmail.com>\n"
-        msg += u"License: MIT\n\n"
+        msg += "Author: Stan <lishnih@gmail.com>\n"
+        msg += "License: MIT\n\n"
 
-        msg += u"Python: {0}\n".format(sys.version)
-        msg += u"PySide: {0}\n".format(__version__)
-        msg += u"Qt: {0}\n".format(QtCore.__version__)
+        msg += "Python: {0}\n".format(sys.version)
+        msg += "PySide: {0}\n".format(__version__)
+        msg += "Qt: {0}\n".format(QtCore.__version__)
         QtGui.QMessageBox.about(None, "About", msg)
-
 
     def OnAbout_Qt(self):
         QtGui.QApplication.aboutQt()
-
 
     def closeEvent(self, event):
         # Сохраняем состояние окна
@@ -79,12 +84,10 @@ class MainFrame(QtGui.QMainWindow):
 
 # Основной функционал
 
-
     def loadScheme(self):
         tasks = self.s.get('tasks', [])
         for task in tasks:
             draw_task(self.ui.gragWidget, task)
-
 
     def saveScheme(self):
         tasks = []
@@ -99,9 +102,8 @@ class MainFrame(QtGui.QMainWindow):
 
 # Сервисные функции
 
-
     def set_status(self, message=''):
         if isinstance(message, (list, tuple)):
-            message = u"{0} и др. значения".format(message[0])
+            message = "{0} и др. значения".format(message[0])
         self.sb_message = message
         self.ui.statusbar.showMessage(self.sb_message)

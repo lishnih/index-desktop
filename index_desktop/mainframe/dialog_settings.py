@@ -2,14 +2,17 @@
 # coding=utf-8
 # Stan 2013-02-08
 
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
 from PySide import QtCore, QtGui
 
+from ..core.backwardcompat import *
 
-# from dialog_settings_test_ui import Ui_Dialog
-from dialog_sources import Sources
+# from .dialog_settings_test_ui import Ui_Dialog
+from .dialog_sources import Sources
 
-from lib.backwardcompat import *
-from task_item import redraw, proceed_task
+from .task_item import redraw, proceed_task
 
 
 class Settings(QtGui.QDialog):
@@ -35,7 +38,7 @@ class Settings(QtGui.QDialog):
         for key in sorted(self.child.taskData.keys()):
             value = self.child.taskData.get(key)
             tt = str(type(value)).replace('<', '&lt;').replace('>', '&gt;')
-            text = u'{0}<br/><span style="color:#aaaaaa;">{1}</span>'.format(key, tt)
+            text = '{0}<br/><span style="color:#aaaaaa;">{1}</span>'.format(key, tt)
             label = QtGui.QLabel(text, Dialog)
 #           label.setFrameStyle(QtGui.QFrame.Panel)
 #           label.setLineWidth(1)
@@ -61,7 +64,6 @@ class Settings(QtGui.QDialog):
 
 # События
 
-
     def accept(self):
         if self.child.isHidden():
             self.child.close()
@@ -78,7 +80,6 @@ class Settings(QtGui.QDialog):
         self.saveDialogSettings()
         self.done(True)
 
-
     def reject(self):
         if self.child.isHidden():
             self.child.show()
@@ -88,19 +89,15 @@ class Settings(QtGui.QDialog):
         self.saveDialogSettings()
         self.done(False)
 
-
     def closeEvent(self, event):
         self.reject()
-
 
     def OnViewSources(self):
         dialog = Sources(self.parent, self.child.taskData, self.window().settings)
         res = dialog.exec_()
 
-
     def OnProceed(self):
         proceed_task(self.child.taskData)
-
 
     def OnDelete(self):
         self.child.hide()
@@ -108,13 +105,11 @@ class Settings(QtGui.QDialog):
 
 # Сервисные функции
 
-
     # Восстанавливаем состояние окна
     def loadDialogSettings(self):
         if self.settings:
             self.restoreGeometry(self.settings.value("geometry_settings"))
 #           self.restoreState(self.settings.value("windowState_settings"))
-
 
     # Сохраняем состояние окна
     def saveDialogSettings(self):
@@ -122,11 +117,9 @@ class Settings(QtGui.QDialog):
             self.settings.setValue("geometry_settings", self.saveGeometry())
 #           self.settings.setValue("windowState_settings", self.saveState())
 
-
     def may_change(self, value):
         if isinstance(value, simple_types):
             return True
-
 
     def is_changed(self, value1, value2):
         type1 = unicode if isinstance(value1, basestring) else type(value1)
@@ -136,12 +129,11 @@ class Settings(QtGui.QDialog):
             try:
                 value2 = type1(value2)
             except:
-                print(u"Не могу конвертировать {0} в тип {1}".format(value2, type1))
+                print("Не могу конвертировать {0} в тип {1}".format(value2, type1))
                 return
 
         if value1 != value2:
             return True
-
 
 
 # Form implementation
@@ -157,14 +149,14 @@ class Ui_Dialog(object):
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout.setObjectName("formLayout")
 
-        ###
+        # =====
 
         self.horizontalLayout.addLayout(self.formLayout)
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.buttonBox = QtGui.QDialogButtonBox(Dialog)
         self.buttonBox.setOrientation(QtCore.Qt.Vertical)
-        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel | QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
         self.proceedButton = QtGui.QPushButton(Dialog)

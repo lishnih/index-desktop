@@ -2,12 +2,15 @@
 # coding=utf-8
 # Stan 2013-02-02
 
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
 import sys
 from PySide import QtCore, QtGui
 
-import dragwidget_rc
-from dialog_settings import Settings
-from task_item import init_task, draw_task, redraw, highlight, proceed_task
+from . import dragwidget_rc
+from .dialog_settings import Settings
+from .task_item import init_task, draw_task, redraw, highlight, proceed_task
 
 
 class DragWidget(QtGui.QFrame):
@@ -45,7 +48,6 @@ class DragWidget(QtGui.QFrame):
 
 # События
 
-
     # Событие, возникающее при захватывании объекта
     def dragEnterEvent(self, event):
         source = event.source()
@@ -59,7 +61,7 @@ class DragWidget(QtGui.QFrame):
                 event.ignore()
             return
 
-        if source == None:
+        if source is None:
             urls = event.mimeData().urls()
             if urls:
                 event.acceptProposedAction()
@@ -67,10 +69,8 @@ class DragWidget(QtGui.QFrame):
                 event.ignore()
             return
 
-
     # Событие, возникающее при передвижении объекта
 #   dragMoveEvent = dragEnterEvent
-
 
     # Событие, возникающее при отпускании объекта
     def dropEvent(self, event):
@@ -94,7 +94,7 @@ class DragWidget(QtGui.QFrame):
             event.accept()
             return
 
-        if source == None:
+        if source is None:
             urls = event.mimeData().urls()
             if urls:
                 sources = [i.path()[1:] for i in urls]
@@ -113,13 +113,11 @@ class DragWidget(QtGui.QFrame):
                 event.ignore()
             return
 
-
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.mousePressEvent_Left(event)
         elif event.button() == QtCore.Qt.MouseButton.RightButton:
             self.mousePressEvent_Right(event)
-
 
     def mousePressEvent_Left(self, event):
         child = self.childAt(event.pos())
@@ -162,7 +160,6 @@ class DragWidget(QtGui.QFrame):
         else:
             redraw(child)
 
-
     def mousePressEvent_Right(self, event):
         child = self.childAt(event.pos())
         if not child:
@@ -173,11 +170,9 @@ class DragWidget(QtGui.QFrame):
         pos = self.mapToGlobal(event.pos())
         self.menuTask.popup(pos)
 
-
     def mouseDoubleClickEvent(self, event):
         if event.button() == QtCore.Qt.MouseButton.LeftButton:
             self.mouseDoubleClickEvent_Left(event)
-
 
     def mouseDoubleClickEvent_Left(self, event):
         child = self.childAt(event.pos())
@@ -190,15 +185,12 @@ class DragWidget(QtGui.QFrame):
         dialog = Settings(self.parent, child, self.settings, self.s)
         res = dialog.exec_()
 
-
     def OnProceed(self):
         proceed_task(self.selected.taskData)
 
-
     def OnDebug(self):
-        print self.selected.taskData
-        print
-
+        print(self.selected.taskData)
+        print()
 
     def OnDelete(self):
         self.selected.close()
@@ -206,12 +198,10 @@ class DragWidget(QtGui.QFrame):
 
 # Сервисные функции
 
-
     def tasks_list(self):
         for child in self.children():
             if hasattr(child, 'taskData'):
                 yield child.taskData
-
 
 
 if __name__ == '__main__':

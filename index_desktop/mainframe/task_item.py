@@ -2,16 +2,22 @@
 # coding=utf-8
 # Stan 2013-02-14
 
-import sys, os
-import subprocess, multiprocessing, logging
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
+import sys
+import os
+import subprocess
+import multiprocessing
+import logging
 from PySide import QtCore, QtGui
 from sqlalchemy import types
 
-import dragwidget_rc
+from . import dragwidget_rc
 
 
 def init_task(parent, sources=[], pos=None):
-    name = os.path.basename(sources[0]) if sources else u"Новая задача"
+    name = os.path.basename(sources[0]) if sources else "Новая задача"
     count = len(sources)
     if count > 1:
         name = name + "+"
@@ -27,7 +33,7 @@ def init_task(parent, sources=[], pos=None):
 def draw_task(parent, task, offset=None, middle=None):
     taskIcon = QtGui.QLabel(parent)
     pos = task.get('pos')
-    img = task.get('img', u":/images/file.png")
+    img = task.get('img', ":/images/file.png")
 
     if isinstance(pos, QtCore.QPoint):
         pos = pos.toTuple()
@@ -55,14 +61,14 @@ def draw_task(parent, task, offset=None, middle=None):
 
 def redraw(child):
     taskData = child.taskData
-    name = taskData.get('name', u"/Без имени/")
-    img  = taskData.get('img',  u":/images/file.png")
+    name = taskData.get('name', "/Без имени/")
+    img  = taskData.get('img',  ":/images/file.png")
     taskIcon = taskData.get('icon')
 
     sources = taskData.get('sources', [])
     count = len(sources)
 
-    taskIcon.setText(u'<p align="center"><img src="{0}"/><br/>{1}<br/>Всего {2} элем.</p>'.format(img, name, count))
+    taskIcon.setText('<p align="center"><img src="{0}"/><br/>{1}<br/>Всего {2} элем.</p>'.format(img, name, count))
 
 
 def highlight(child):
@@ -106,11 +112,11 @@ def proceed_task(taskData):
         p = multiprocessing.Process(target=worker, args=args)
         p.start()
     else:
-        QtGui.QMessageBox.warning(None, "Warning", u"""Скрипт proceed не задан!""")
+        QtGui.QMessageBox.warning(None, "Warning", """Скрипт proceed не задан!""")
 
 
 def worker(*args):
-    print args
+    print(args)
 
     fse = sys.getfilesystemencoding()
     args = [i.encode(fse) for i in args]

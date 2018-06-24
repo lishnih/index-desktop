@@ -2,10 +2,14 @@
 # coding=utf-8
 # Stan 2011-06-22
 
-import sys, logging
+from __future__ import (division, absolute_import,
+                        print_function, unicode_literals)
+
+import sys
+import logging
 from PySide import QtCore, QtGui
 
-from mainframe import MainFrame             # Основное окно
+from .mainframe import MainFrame             # Основное окно
 # from systray import SysTray               # Трей
 
 
